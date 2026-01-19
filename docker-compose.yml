@@ -1,0 +1,28 @@
+services: # Contenedores a desplegar
+  # Base de Datos: PostgreSQL 17
+  db:
+    container_name: postgres_db # Nombre del contenedor
+    image: postgres:17 # Versión de PostgreSQL
+    restart: always # Qué hacer si el contenedor falla
+    environment: # Variables de entorno para configurar PostgreSQL
+      POSTGRES_USER: postgres # Nombre del superusuario
+      POSTGRES_PASSWORD: admin # Contraseña del superusuario
+      POSTGRES_DB: edusync_db # Nombre de la base de datos por defecto
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./PostgresData:/var/lib/postgresql/data # Volumen para persistencia de datos
+      # ./Carpeta en el proyecto:/Ruta dentro del contenedor
+
+  # Interfaz Gráfica: pgAdmin 4 (Última versión)
+  pgadmin:
+    container_name: pgadmin_container # Nombre del contenedor
+    image: dpage/pgadmin4:latest # Imagen oficial de pgAdmin 4
+    restart: always # Qué hacer si el contenedor falla
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com # Usuario para entrar a la web de pgAdmin
+      PGADMIN_DEFAULT_PASSWORD: admin # Contraseña para entrar a la web de pgAdmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
