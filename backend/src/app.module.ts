@@ -1,8 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { join } from 'path';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { ConfigModule as AppConfigModule } from './config/config.module';
+import { AcademicModule } from './academic/academic.module';
 
 @Module({
   imports: [
@@ -23,9 +31,25 @@ import { AppService } from './app.service';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true, // ¡OJO! Solo para desarrollo (crea tablas automáticamente)
+        autoLoadEntities: true,
+        synchronize: true, // Solo para desarrollo (crea tablas automáticamente)
       }),
     }),
+
+    // 3. Configuración de GraphQL con Apollo
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      sortSchema: true,
+      playground: true, // Habilitar playground para pruebas
+    }),
+
+    // Módulos de la aplicación
+    UsersModule,
+    AuthModule,
+    // Módulo de configuración (dominios permitidos)
+    AppConfigModule,
+    AcademicModule,
   ],
   controllers: [AppController],
   providers: [AppService],
