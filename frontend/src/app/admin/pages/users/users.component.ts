@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Apollo, gql } from 'apollo-angular';
@@ -123,24 +123,21 @@ const GET_ALLOWED_DOMAINS = gql`
 })
 export class UsersComponent implements OnInit 
 {
+    private apollo = inject(Apollo);
+    private fb = inject(FormBuilder);
+
     users: any[] = [];
     allowedDomains: string[] = [];
     isModalOpen = false;
     isLoading = false;
-    adminForm: FormGroup;
-
-    constructor(private apollo: Apollo, private fb: FormBuilder) 
-    {
-        addIcons({ personAddOutline, trashOutline, shieldCheckmarkOutline });
-        
-        this.adminForm = this.fb.group({
-            fullName: ['', [Validators.required, Validators.minLength(3)]],
-            email: ['', [Validators.required, Validators.email]]
-        });
-    }
+    adminForm: FormGroup = this.fb.group({
+        fullName: ['', [Validators.required, Validators.minLength(3)]],
+        email: ['', [Validators.required, Validators.email]]
+    });
 
     ngOnInit() 
     {
+        addIcons({ personAddOutline, trashOutline, shieldCheckmarkOutline });
         this.LoadUsers();
         this.LoadAllowedDomains();
     }

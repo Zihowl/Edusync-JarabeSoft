@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
 
@@ -35,17 +35,10 @@ import { Router } from '@angular/router';
   `,
   styles: []
 })
-export class DashboardComponent implements OnInit 
+export class DashboardComponent
 {
-    constructor(
-        private authService: AuthService,
-        private router: Router
-    ) {}
-
-    ngOnInit(): void 
-    {
-        // Validation logic could go here
-    }
+    private authService = inject(AuthService);
+    private router = inject(Router);
 
     // Standard: PascalCase
     Logout() 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Apollo, gql } from 'apollo-angular';
 import { IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonList, IonItem, IonLabel, IonAvatar, IonIcon, IonSearchbar } from '@ionic/angular/standalone';
@@ -57,16 +57,14 @@ const GET_TEACHERS = gql`
 })
 export class TeachersComponent implements OnInit 
 {
+    private apollo = inject(Apollo);
+
     teachers: any[] = [];
     filteredTeachers: any[] = [];
 
-    constructor(private apollo: Apollo) 
-    {
-        addIcons({ personOutline, chevronForwardOutline });
-    }
-
     ngOnInit() 
     {
+        addIcons({ personOutline, chevronForwardOutline });
         this.LoadTeachers();
     }
 

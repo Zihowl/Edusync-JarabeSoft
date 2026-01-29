@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Apollo, gql } from 'apollo-angular';
@@ -76,16 +76,14 @@ const REMOVE_DOMAIN = gql`
 })
 export class ConfigComponent implements OnInit 
 {
+    private apollo = inject(Apollo);
+
     domains: any[] = [];
     newDomain: string = '';
 
-    constructor(private apollo: Apollo) 
-    {
-        addIcons({ trashOutline, addCircleOutline });
-    }
-
     ngOnInit() 
     {
+        addIcons({ trashOutline, addCircleOutline });
         this.LoadDomains();
     }
 

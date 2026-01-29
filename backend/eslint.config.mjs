@@ -26,10 +26,21 @@ export default tseslint.config(
   },
   {
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
+      // '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
       "prettier/prettier": ["error", { endOfLine: "auto" }],
+    },
+  },
+  {
+    files: ['**/*.ts'],
+    rules: {
+      // Disable Prettier formatting check for TypeScript to avoid conflicts with Allman
+      'prettier/prettier': 'off',
+      'brace-style': ['error', 'allman', { allowSingleLine: false }],
+      'indent': ['error', 4],
+      'max-lines': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
+      'max-lines-per-function': ['error', 20],
     },
   },
 );

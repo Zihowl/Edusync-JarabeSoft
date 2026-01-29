@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router, RouterModule } from '@angular/router';
@@ -98,15 +98,14 @@ import { settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline } fro
 })
 export class DashboardComponent implements OnInit
 {
-    role: string | null = '';
+    private authService = inject(AuthService);
+    private router = inject(Router);
 
-    constructor(private authService: AuthService, private router: Router) 
-    {
-        addIcons({ settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline });
-    }
+    role: string | null = '';
 
     ngOnInit() 
     {
+        addIcons({ settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline });
         this.role = this.authService.GetUserRole();
         
         // === AGREGA ESTO PARA DIAGNOSTICAR ===

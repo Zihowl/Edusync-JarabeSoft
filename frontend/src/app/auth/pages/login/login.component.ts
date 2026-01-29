@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -7,35 +7,31 @@ import { AuthService } from '../../../core/services/auth.service';
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonButton, IonInput, IonItem, IonLabel } from '@ionic/angular/standalone';
 
 @Component({
-  selector: 'app-login',
-  standalone: true, // ¡CRUCIAL!
-  imports: [
-      CommonModule, 
-      ReactiveFormsModule,
-      // Ionic Imports (opcional si usas Bootstrap puro, pero recomendado dejarlo listo)
-      IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonButton, IonInput, IonItem, IonLabel
-  ],
-  templateUrl: './login.component.html',
-  styles: [] // Usamos array vacío en lugar de un archivo externo
+selector: 'app-login',
+standalone: true, // ¡CRUCIAL!
+imports: [
+    CommonModule, 
+    ReactiveFormsModule,
+    // Ionic Imports (opcional si usas Bootstrap puro, pero recomendado dejarlo listo)
+    IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonButton, IonInput, IonItem, IonLabel
+    ],
+templateUrl: './login.component.html',
+styles: [] // Usamos array vacío en lugar de un archivo externo
 })
 export class LoginComponent 
 {
-    loginForm: FormGroup;
+    private fb = inject(FormBuilder);
+    private authService = inject(AuthService);
+    private router = inject(Router);
+
+    loginForm: FormGroup = this.fb.group({
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(6)]]
+    });
+
     errorMessage: string = '';
     isLoading: boolean = false;
 
-    constructor(
-        private fb: FormBuilder,
-        private authService: AuthService,
-        private router: Router
-    ) {
-        this.loginForm = this.fb.group({
-            email: ['', [Validators.required, Validators.email]],
-            password: ['', [Validators.required, Validators.minLength(6)]]
-        });
-    }
-
-    // Standard: PascalCase
     OnSubmit() 
     {
         if (this.loginForm.invalid) return;

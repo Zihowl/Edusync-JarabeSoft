@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonCard, IonCardContent, IonButton, IonIcon, IonProgressBar, IonText } from '@ionic/angular/standalone';
@@ -73,13 +73,15 @@ import { cloudUploadOutline, documentTextOutline } from 'ionicons/icons';
     </ion-content>
   `
 })
-export class UploadComponent 
+export class UploadComponent implements OnInit
 {
+    private http = inject(HttpClient);
+
     selectedFile: File | null = null;
     isLoading = false;
     uploadResult: any = null;
 
-    constructor(private http: HttpClient) 
+    ngOnInit() 
     {
         addIcons({ cloudUploadOutline, documentTextOutline });
     }

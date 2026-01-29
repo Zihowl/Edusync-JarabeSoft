@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { map, Observable } from 'rxjs';
 import { Router } from '@angular/router';
@@ -26,10 +26,8 @@ export class AuthService
     private readonly TOKEN_KEY = 'auth_token';
     private readonly USER_KEY = 'user_data'; // <--- Nueva clave
 
-    constructor(
-        private apollo: Apollo,
-        private router: Router
-    ) {}
+    private apollo = inject(Apollo);
+    private router = inject(Router);
 
     // Standard: PascalCase
     Login(email: string, password: string): Observable<boolean> 
