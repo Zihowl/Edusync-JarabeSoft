@@ -50,7 +50,7 @@ const REMOVE_DOMAIN = gql`
         
         <div class="card mb-4">
           <div class="card-body d-flex gap-2">
-            <input type="text" class="form-control" [(ngModel)]="newDomain" placeholder="ej: tecmm.edu.mx" (keyup.enter)="AddDomain()">
+            <input type="text" class="form-control" [(ngModel)]="newDomain" placeholder="ej: ceti.mx" (keyup.enter)="AddDomain()">
             <button class="btn btn-primary" (click)="AddDomain()" [disabled]="!newDomain">
               Agregar
             </button>
@@ -102,7 +102,7 @@ export class ConfigComponent implements OnInit
         this.apollo.mutate({
             mutation: ADD_DOMAIN,
             variables: { domain: this.newDomain },
-            refetchQueries: [{ query: GET_DOMAINS }] // Actualizar lista automáticamente
+            refetchQueries: [{ query: GET_DOMAINS }]
         }).subscribe({
             next: () => {
                 this.newDomain = '';
@@ -117,7 +117,7 @@ export class ConfigComponent implements OnInit
 
         this.apollo.mutate({
             mutation: REMOVE_DOMAIN,
-            variables: { id: parseInt(id.toString()) }, // Asegurar Int
+            variables: { id: parseInt(id.toString()) },
             refetchQueries: [{ query: GET_DOMAINS }]
         }).subscribe();
     }

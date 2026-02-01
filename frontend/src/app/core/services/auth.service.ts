@@ -1,35 +1,49 @@
 import { Injectable, inject } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { map, Observable } from 'rxjs';
+import { map, Observable, BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
 
-// Definición de la Mutación (Tal cual la probaste en el Playground)
 const LOGIN_MUTATION = gql`
-  mutation Login($email: String!, $password: String!) {
-    Login(loginInput: { email: $email, password: $password }) {
-      accessToken
-      user {
-        id
-        email
-        role
-        isActive
-      }
+    mutation Login($email: String!, $password: String!)
+    {
+        Login(
+            loginInput:
+            {
+                email: $email,
+                password: $password
+            })
+            {
+                accessToken
+                user
+                {
+                    id
+                    email
+                    role
+                    isActive
+                }
+            }
     }
-  }
 `;
 
-@Injectable({
-  providedIn: 'root'
+@Injectable
+({
+    providedIn: 'root'
 })
+
 export class AuthService 
 {
     private readonly TOKEN_KEY = 'auth_token';
-    private readonly USER_KEY = 'user_data'; // <--- Nueva clave
+    private readonly USER_KEY = 'user_data';
 
     private apollo = inject(Apollo);
     private router = inject(Router);
 
-    // Standard: PascalCase
+    private userSubject = new BehaviorSubject<any>
+    (
+        JSON.parse(localStorage.getItem(this.USER_KEY) || 'null')
+    );
+    user$ = this.userSubject.asObservable();
+
     Login(email: string, password: string): Observable<boolean> 
     {
         return this.apollo.mutate<any>({
@@ -37,16 +51,14 @@ export class AuthService
             variables: { email, password }
         }).pipe(
             map(result => {
-                console.log('Respuesta del Backend:', result); // <--- DEBUG 1
+                console.log('Respuesta del Backend:', result);
 
-                // A veces es result.data.login (minúscula) o result.data.Login (mayúscula)
-                // Usamos ?. para evitar errores si es null
                 const data = result.data?.Login || result.data?.login; 
                 
                 if (data && data.accessToken) 
                 {
-                    console.log('Guardando Usuario:', data.user); // <--- DEBUG 2
-                    this.SaveSession(data.accessToken, data.user); // <--- Pasamos el usuario
+                    console.log('Guardando Usuario:', data.user);
+                    this.SaveSession(data.accessToken, data.user);
                     return true;
                 }
                 return false;
@@ -57,17 +69,18 @@ export class AuthService
     Logout() 
     {
         localStorage.removeItem(this.TOKEN_KEY);
-        localStorage.removeItem(this.USER_KEY); // <--- Limpiamos usuario
+        localStorage.removeItem(this.USER_KEY);
+        this.userSubject.next(null);
         this.router.navigate(['/auth/login']);
     }
 
     private SaveSession(token: string, user: any) 
     {
         localStorage.setItem(this.TOKEN_KEY, token);
-        localStorage.setItem(this.USER_KEY, JSON.stringify(user)); // <--- Guardamos JSON
+        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        this.userSubject.next(user);
     }
     
-    // Nuevo método para leer el rol
     GetUserRole(): string | null
     {
         const userStr = localStorage.getItem(this.USER_KEY);

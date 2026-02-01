@@ -2,27 +2,30 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
-// Importamos módulos de Ionic Standalone si usas componentes visuales de Ionic
 import { IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonButton, IonInput, IonItem, IonLabel } from '@ionic/angular/standalone';
+import { ActivatedRoute } from '@angular/router';
+import { ToastController } from '@ionic/angular';
+
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
 selector: 'app-login',
-standalone: true, // ¡CRUCIAL!
+standalone: true,
 imports: [
     CommonModule, 
     ReactiveFormsModule,
-    // Ionic Imports (opcional si usas Bootstrap puro, pero recomendado dejarlo listo)
     IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonButton, IonInput, IonItem, IonLabel
     ],
 templateUrl: './login.component.html',
-styles: [] // Usamos array vacío en lugar de un archivo externo
+styles: []
 })
 export class LoginComponent 
 {
     private fb = inject(FormBuilder);
     private authService = inject(AuthService);
     private router = inject(Router);
+    private route = inject(ActivatedRoute);
+    private toastCtrl = inject(ToastController);
 
     loginForm: FormGroup = this.fb.group({
         email: ['', [Validators.required, Validators.email]],
@@ -31,6 +34,49 @@ export class LoginComponent
 
     errorMessage: string = '';
     isLoading: boolean = false;
+    returnUrl: string = '/admin';
+
+    ngOnInit()
+    {
+        const nav = this.router.currentNavigation();
+        const state = nav?.extras?.state as
+        { message?: string, returnUrl?: string, showOnce?: boolean } | undefined;
+
+        const msg = state?.message || '';
+        const shouldShow = !!msg && state?.showOnce === true;
+        if (shouldShow)
+        {
+            this.errorMessage = msg;
+            this.showToast(msg, 'Acceso requerido');
+            window.history.replaceState({}, '', this.router.url);
+        }
+        else
+        {
+            this.errorMessage = '';
+        }
+        this.returnUrl = 
+            state?.returnUrl || 
+            sessionStorage.getItem('returnUrl') || 
+            '/admin';
+
+        sessionStorage.removeItem('returnUrl');
+    }
+
+    private async showToast(message: string, header: string = 'Acceso requerido')
+    {
+        const toast = await this.toastCtrl.create(
+        { 
+            header,
+            message, 
+            duration: 4500, 
+            position: 'top',
+            cssClass: 'login-toast',
+            icon: 'information-circle',
+            animated: true,
+            keyboardClose: true
+        });
+        await toast.present();
+    }
 
     OnSubmit() 
     {
@@ -41,19 +87,23 @@ export class LoginComponent
 
         const { email, password } = this.loginForm.value;
 
-        this.authService.Login(email, password).subscribe({
-            next: (success) => {
+        this.authService.Login(email, password).subscribe(
+        {
+            next: (success) => 
+            {
                 this.isLoading = false;
-                if (success) 
+                const returnUrl = this.returnUrl;
+                if (success)
                 {
-                    console.log('Login Successful!');
-                    // Redirigir al Admin Dashboard
-                    this.router.navigate(['/admin']);
+                    sessionStorage.removeItem('returnUrl');
+                    this.router.navigateByUrl(returnUrl);
                 }
             },
-            error: (err) => {
+            error: (err) => 
+            {
                 this.isLoading = false;
                 this.errorMessage = 'Credenciales inválidas o error de conexión.';
+                this.showToast(this.errorMessage, 'Revisa tus datos');
                 console.error(err);
             }
         });

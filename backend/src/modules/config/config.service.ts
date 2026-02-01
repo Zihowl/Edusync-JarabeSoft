@@ -14,19 +14,42 @@ export class ConfigService
 
     async createDomain(domain: string): Promise<AllowedDomain> 
     {
-        if (!domain.includes('.')) 
-        {
-            throw new BadRequestException('Domain must contain a dot.');
-        }
+        domain = this.normalizeDomain(domain);
+
+        this.validateDomainFormat(domain);
 
         const existing = await this.domainRepository.findOneBy({ domain });
-        if (existing) 
+        if (existing)
         {
             throw new ConflictException('Domain already exists');
         }
 
         const newDomain = this.domainRepository.create({ domain });
         return await this.domainRepository.save(newDomain);
+    }
+
+    private normalizeDomain(domain: string): string
+    {
+        return (domain || '').trim().toLowerCase();
+    }
+
+    private validateDomainFormat(domain: string): void
+    {
+        if (!domain)
+        {
+            throw new BadRequestException('Domain is required.');
+        }
+
+        if (!domain.includes('.'))
+        {
+            throw new BadRequestException('Domain must contain a dot.');
+        }
+
+        const DOMAIN_REGEX = /^(?=.{1,255}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?))*$/;
+        if (!DOMAIN_REGEX.test(domain))
+        {
+            throw new BadRequestException('Invalid domain format.');
+        }
     }
 
     async getAllowedDomains(): Promise<AllowedDomain[]> 
@@ -36,10 +59,7 @@ export class ConfigService
 
     async removeDomain(id: number): Promise<boolean> 
     {
-        // RQNF-WEB-27: Aquí deberíamos validar si hay usuarios usándolo antes de borrar.
-        // Por ahora, borrado directo para el MVP.
         const result = await this.domainRepository.delete(id);
-        // CORRECCIÓN: Usamos (result.affected ?? 0) para evitar "possibly undefined"
         return (result.affected ?? 0) > 0;
     }
 }

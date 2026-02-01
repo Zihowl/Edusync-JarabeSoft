@@ -36,10 +36,6 @@
             </ion-input>
           </div>
 
-          <div *ngIf="errorMessage" class="alert alert-danger text-center p-2 mb-3">
-            {{ errorMessage }}
-          </div>
-
           <ion-button expand="block" type="submit" [disabled]="loginForm.invalid || isLoading">
             {{ isLoading ? 'Verificando...' : 'Iniciar Sesión' }}
           </ion-button>

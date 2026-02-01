@@ -38,3 +38,42 @@
 
 /* frontend/src/global.scss */
 @import 'bootstrap/dist/css/bootstrap.css';
+
+/* Soft, prominent login toast */
+ion-toast.login-toast {
+	--background: #ffffff;
+	--color: #1f2937;
+	--box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+	--border-radius: 10px;
+	--min-width: 0;
+	--max-width: 400px;
+}
+
+ion-toast.login-toast::part(container) {
+	padding: 10px 14px;
+	display: inline-flex;
+	flex-direction: column;
+	align-items: flex-start;
+	width: auto;
+	max-width: 90vw;
+	margin: 0 auto;
+	border-radius: 10px;
+}
+
+ion-toast.login-toast::part(header) {
+	font-size: 1rem;
+	font-weight: 600;
+	margin-bottom: 2px;
+	color: var(--ion-color-primary);
+}
+
+ion-toast.login-toast::part(message) {
+	font-size: 0.98rem;
+	line-height: 1.35;
+	color: #1f2937;
+}
+
+ion-toast.login-toast::part(icon) {
+	color: #64748b;
+	font-size: 1.1rem;
+}
