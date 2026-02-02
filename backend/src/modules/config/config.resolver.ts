@@ -3,7 +3,6 @@ import { AllowedDomain } from './entities/allowed-domain.entity';
 import { ConfigService } from './config.service';
 
 @Resolver(() => AllowedDomain)
-// @UseGuards(GqlAuthGuard) // Descomentar cuando tengamos el Guard listo
 export class ConfigResolver 
 {
     constructor(private readonly configService: ConfigService) 

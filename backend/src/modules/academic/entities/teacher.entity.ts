@@ -3,23 +3,20 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @ObjectType()
 @Entity('teachers')
-export class Teacher 
+export class Teacher
 {
     @Field(() => ID)
     @PrimaryGeneratedColumn()
-        id: number;
+    id: number;
 
     @Field()
     @Column({ unique: true })
-        employeeNumber: string;
+    employeeNumber: string;
 
     @Field()
     @Column()
-        name: string;
-
-    // === CORRECCIÓN AQUÍ ===
-    // Agregamos { nullable: true } al decorador @Field
+    name: string;
     @Field({ nullable: true })
     @Column({ nullable: true })
-        email: string;
+    email: string;
 }

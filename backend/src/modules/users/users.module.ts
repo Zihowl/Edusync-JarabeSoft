@@ -9,7 +9,7 @@ import { ConfigModule } from '../config/config.module';
 @Module({
     imports: [TypeOrmModule.forFeature([User]), ConfigModule],
     providers: [UsersService, UsersResolver, BootstrapService],
-    exports: [UsersService], // Exportamos para usarlo en Auth luego
+    exports: [UsersService],
 })
-export class UsersModule 
+export class UsersModule
 {}

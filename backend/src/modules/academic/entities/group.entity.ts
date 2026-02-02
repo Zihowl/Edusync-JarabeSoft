@@ -3,13 +3,13 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @ObjectType()
 @Entity('groups')
-export class Group 
+export class Group
 {
     @Field(() => ID)
     @PrimaryGeneratedColumn()
-        id: number;
+    id: number;
 
     @Field()
     @Column({ unique: true })
-        name: string; // Ej: "8vo Semestre A"
+    name: string;
 }

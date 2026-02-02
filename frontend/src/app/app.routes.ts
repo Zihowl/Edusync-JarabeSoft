@@ -3,12 +3,12 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
     {
         path: 'auth',
-        loadChildren: () => 
+        loadChildren: () =>
             import('./auth/auth.routes').then(m => m.authRoutes)
     },
     {
         path: 'admin',
-        loadChildren: () => 
+        loadChildren: () =>
             import('./admin/admin.routes').then(m => m.adminRoutes)
     },
     {

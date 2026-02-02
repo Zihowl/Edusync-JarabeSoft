@@ -8,12 +8,12 @@ import * as argon2 from 'argon2';
 import * as crypto from 'crypto';
 
 @Injectable()
-export class UsersService 
+export class UsersService
 {
     constructor(
         @InjectRepository(User)
         private readonly userRepository: Repository<User>,
-        private readonly configService: ConfigService, // Inyectado para validar dominios
+        private readonly configService: ConfigService,
     ) 
     {}
 
@@ -30,18 +30,10 @@ export class UsersService
     async CreateAdmin(input: CreateAdminInput): Promise<User> 
     {
         await this.EnsureNotExists(input.email);
-
-        // 2. Validar dominio permitido
         await this.EnsureDomainAllowed(input.email);
-
-        // 3. Generar contraseña temporal y hash
         const tempPassword = this.GenerateTempPassword();
         const hash = await argon2.hash(tempPassword);
-
-        // 4. Crear y guardar usuario
         const savedUser = await this.CreateAndSaveAdmin(input, hash);
-
-        // 5. Simular envío de correo
         this.SendWelcomeEmail(input.email, tempPassword);
 
         return savedUser;

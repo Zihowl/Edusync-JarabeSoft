@@ -3,17 +3,17 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @ObjectType()
 @Entity('subjects')
-export class Subject 
+export class Subject
 {
     @Field(() => ID)
     @PrimaryGeneratedColumn()
-        id: number;
+    id: number;
 
     @Field()
     @Column({ unique: true })
-        code: string; // Clave oficial de la materia
+    code: string;
 
     @Field()
     @Column()
-        name: string;
+    name: string;
 }

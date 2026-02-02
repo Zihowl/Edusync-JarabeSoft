@@ -7,49 +7,45 @@ import { Group } from './group.entity';
 
 @ObjectType()
 @Entity('schedule_slots')
-export class ScheduleSlot 
+export class ScheduleSlot
 {
     @Field(() => ID)
     @PrimaryGeneratedColumn()
-        id: number;
-
-    // --- Relaciones ---
+    id: number;
 
     @Field(() => Teacher)
-    @ManyToOne(() => Teacher, { eager: true }) // Eager carga la relación automáticamente
+    @ManyToOne(() => Teacher, { eager: true })
     @JoinColumn({ name: 'teacher_id' })
-        teacher: Teacher;
+    teacher: Teacher;
 
     @Field(() => Subject)
     @ManyToOne(() => Subject, { eager: true })
     @JoinColumn({ name: 'subject_id' })
-        subject: Subject;
+    subject: Subject;
 
     @Field(() => Classroom)
     @ManyToOne(() => Classroom, { eager: true })
     @JoinColumn({ name: 'classroom_id' })
-        classroom: Classroom;
+    classroom: Classroom;
 
     @Field(() => Group)
     @ManyToOne(() => Group, { eager: true })
     @JoinColumn({ name: 'group_id' })
-        group: Group;
-
-    // --- Datos del Horario ---
+    group: Group;
 
     @Field(() => Int)
     @Column()
-        dayOfWeek: number; // 1=Lunes, 2=Martes...
+    dayOfWeek: number;
 
     @Field()
     @Column({ type: 'time' })
-        startTime: string; // "07:00:00"
+    startTime: string;
 
     @Field()
     @Column({ type: 'time' })
-        endTime: string; // "09:00:00"
+    endTime: string;
 
     @Field({ nullable: true })
     @Column({ nullable: true })
-        subgroup: string; // Ej: "A", "B" o NULL si es grupo completo
+    subgroup: string;
 }

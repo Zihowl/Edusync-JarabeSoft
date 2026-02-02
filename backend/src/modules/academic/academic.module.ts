@@ -5,21 +5,20 @@ import { Subject } from './entities/subject.entity';
 import { Classroom } from './entities/classroom.entity';
 import { Group } from './entities/group.entity';
 import { ScheduleSlot } from './entities/schedule-slot.entity';
-// Servicios y Controladores
 import { ExcelService } from './services/excel.service';
 import { AcademicController } from './academic.controller';
-import { TeachersService } from './services/teachers.service'; // <--- Nuevo
-import { TeachersResolver } from './resolvers/teachers.resolver'; // <--- Nuevo
+import { TeachersService } from './services/teachers.service';
+import { TeachersResolver } from './resolvers/teachers.resolver';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Teacher, Subject, Classroom, Group, ScheduleSlot])],
-    controllers: [AcademicController], // <--- Nuevo Endpoint REST
+    controllers: [AcademicController],
     providers: [
-        ExcelService, // <--- Nuevo Servicio
-        TeachersService, // <--- Registrar
-        TeachersResolver, // <--- Registrar
+        ExcelService,
+        TeachersService,
+        TeachersResolver,
     ],
     exports: [ExcelService],
 })
-export class AcademicModule 
+export class AcademicModule
 {}

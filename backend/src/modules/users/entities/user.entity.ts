@@ -14,40 +14,39 @@ export enum UserRole {
 
 @ObjectType()
 @Entity('users')
-export class User 
+export class User
 {
     @Field(() => ID)
     @PrimaryGeneratedColumn('uuid')
-        id: string;
+    id: string;
 
     @Field()
     @Column({ unique: true })
-        email: string;
+    email: string;
 
-    // === AGREGADO: Nombre completo para administradores ===
     @Field({ nullable: true })
-    @Column({ nullable: true }) // Nullable para bootstrap y compatibilidad
-        fullName: string;
+    @Column({ nullable: true })
+    fullName: string;
 
     @Column()
-        password: string;
+    password: string;
 
     @Field()
     @Column({ type: 'enum', enum: UserRole, default: UserRole.ADMIN_HORARIOS })
-        role: UserRole;
+    role: UserRole;
 
     @Field()
     @Column({ default: true })
-        isActive: boolean;
+    isActive: boolean;
 
     @Column({ default: false })
-        isTempPassword: boolean;
+    isTempPassword: boolean;
 
     @Field()
     @CreateDateColumn()
-        createdAt: Date;
+    createdAt: Date;
 
     @Field()
     @UpdateDateColumn()
-        updatedAt: Date;
+    updatedAt: Date;
 }

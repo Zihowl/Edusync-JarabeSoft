@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Teacher } from '../entities/teacher.entity';
 
 @Injectable()
-export class TeachersService 
+export class TeachersService
 {
     constructor(
         @InjectRepository(Teacher)
@@ -15,18 +15,6 @@ export class TeachersService
     async FindAll(): Promise<Teacher[]> 
     {
         const all = await this.teacherRepo.find({ order: { name: 'ASC' } });
-
-        // === AGREGAR ESTO ===
-        console.log('------------------------------------------------');
-        console.log('🔍 [TeachersService] Buscando docentes...');
-        console.log(`📊 Total encontrados: ${all.length}`);
-        if (all.length > 0) 
-        {
-            console.log('Ejemplo:', all[0]);
-        }
-        console.log('------------------------------------------------');
-        // ====================
-
         return all;
     }
 }

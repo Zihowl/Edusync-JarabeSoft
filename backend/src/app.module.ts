@@ -12,12 +12,10 @@ import { AcademicModule } from './modules/academic/academic.module';
 
 @Module({
     imports: [
-        // 1. Cargar variables de entorno
         ConfigModule.forRoot({
             isGlobal: true,
         }),
 
-        // 2. Configuración asíncrona de TypeORM (para leer las vars de entorno)
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
@@ -31,25 +29,22 @@ import { AcademicModule } from './modules/academic/academic.module';
                 database: configService.get<string>('DB_NAME'),
                 entities: [__dirname + '/**/*.entity{.ts,.js}'],
                 autoLoadEntities: true,
-                synchronize: true, // Solo para desarrollo (crea tablas automáticamente)
+                synchronize: true,
             }),
         }),
 
-        // 3. Configuración de GraphQL con Apollo
         GraphQLModule.forRoot<ApolloDriverConfig>({
             driver: ApolloDriver,
             autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
             sortSchema: true,
-            playground: true, // Habilitar playground para pruebas
+            playground: true,
         }),
 
-        // Módulos de la aplicación
         UsersModule,
         AuthModule,
-        // Módulo de configuración (dominios permitidos)
         AppConfigModule,
         AcademicModule,
     ],
 })
-export class AppModule 
+export class AppModule
 {}

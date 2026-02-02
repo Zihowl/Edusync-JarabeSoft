@@ -9,17 +9,26 @@ import { ToastController } from '@ionic/angular';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
-selector: 'app-login',
-standalone: true,
-imports: [
-    CommonModule, 
-    ReactiveFormsModule,
-    IonContent, IonHeader, IonTitle, IonToolbar, IonCard, IonCardContent, IonButton, IonInput, IonItem, IonLabel
+    selector: 'app-login',
+    standalone: true,
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        IonContent,
+        IonHeader,
+        IonTitle,
+        IonToolbar,
+        IonCard,
+        IonCardContent,
+        IonButton,
+        IonInput,
+        IonItem,
+        IonLabel
     ],
-templateUrl: './login.component.html',
-styles: []
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.scss']
 })
-export class LoginComponent 
+export class LoginComponent
 {
     private fb = inject(FormBuilder);
     private authService = inject(AuthService);
@@ -40,7 +49,7 @@ export class LoginComponent
     {
         const nav = this.router.currentNavigation();
         const state = nav?.extras?.state as
-        { message?: string, returnUrl?: string, showOnce?: boolean } | undefined;
+            { message?: string, returnUrl?: string, showOnce?: boolean } | undefined;
 
         const msg = state?.message || '';
         const shouldShow = !!msg && state?.showOnce === true;
@@ -54,9 +63,9 @@ export class LoginComponent
         {
             this.errorMessage = '';
         }
-        this.returnUrl = 
-            state?.returnUrl || 
-            sessionStorage.getItem('returnUrl') || 
+        this.returnUrl =
+            state?.returnUrl ||
+            sessionStorage.getItem('returnUrl') ||
             '/admin';
 
         sessionStorage.removeItem('returnUrl');
@@ -64,11 +73,10 @@ export class LoginComponent
 
     private async showToast(message: string, header: string = 'Acceso requerido')
     {
-        const toast = await this.toastCtrl.create(
-        { 
+        const toast = await this.toastCtrl.create({
             header,
-            message, 
-            duration: 4500, 
+            message,
+            duration: 4500,
             position: 'top',
             cssClass: 'login-toast',
             icon: 'information-circle',
@@ -78,18 +86,20 @@ export class LoginComponent
         await toast.present();
     }
 
-    OnSubmit() 
+    OnSubmit()
     {
-        if (this.loginForm.invalid) return;
+        if (this.loginForm.invalid)
+        {
+            return;
+        }
 
         this.isLoading = true;
         this.errorMessage = '';
 
         const { email, password } = this.loginForm.value;
 
-        this.authService.Login(email, password).subscribe(
-        {
-            next: (success) => 
+        this.authService.Login(email, password).subscribe({
+            next: (success) =>
             {
                 this.isLoading = false;
                 const returnUrl = this.returnUrl;
@@ -99,7 +109,7 @@ export class LoginComponent
                     this.router.navigateByUrl(returnUrl);
                 }
             },
-            error: (err) => 
+            error: (err) =>
             {
                 this.isLoading = false;
                 this.errorMessage = 'Credenciales inválidas o error de conexión.';

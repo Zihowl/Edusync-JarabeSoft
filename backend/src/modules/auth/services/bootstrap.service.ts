@@ -6,7 +6,7 @@ import * as argon2 from 'argon2';
 import * as crypto from 'crypto';
 
 @Injectable()
-export class BootstrapService implements OnApplicationBootstrap 
+export class BootstrapService implements OnApplicationBootstrap
 {
     private readonly logger = new Logger(BootstrapService.name);
 
@@ -21,12 +21,10 @@ export class BootstrapService implements OnApplicationBootstrap
         await this.CheckAndCreateSuperAdmin();
     }
 
-    // Standard: PascalCase method names
     private async CheckAndCreateSuperAdmin() 
     {
         const count = await this.userRepository.count();
 
-        // Standard: 4 spaces indentation & Braces on new line
         if (count === 0) 
         {
             this.logger.warn('Empty database detected. Starting Genesis Protocol...');
@@ -44,7 +42,7 @@ export class BootstrapService implements OnApplicationBootstrap
         const superAdmin = this.userRepository.create({
             email,
             password: hash,
-            fullName: 'Super Administrator', // Nombre por defecto para Genesis Admin
+            fullName: 'Super Administrator',
             role: UserRole.SUPER_ADMIN,
             isTempPassword: true,
             isActive: true,

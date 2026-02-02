@@ -7,40 +7,32 @@ import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { InMemoryCache } from '@apollo/client/core';
 
-// Archivos del proyecto
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 import { AuthInterceptor } from './app/core/interceptors/auth.interceptor';
 
-bootstrapApplication(AppComponent, 
+bootstrapApplication(AppComponent,
 {
     providers: [
-    {
-        provide: RouteReuseStrategy, useClass: IonicRouteStrategy
-    },
+        {
+            provide: RouteReuseStrategy, useClass: IonicRouteStrategy
+        },
         provideIonicAngular(),
         provideRouter(routes, withPreloading(PreloadAllModules)),
-
-        // 1. Configuración HTTP (Soporte para interceptores legacy)
         provideHttpClient(withInterceptorsFromDi()),
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: AuthInterceptor,
+            multi: true
+        },
+        provideApollo(() =>
+        {
+            const httpLink = inject(HttpLink);
 
-        // 2. Registro del AuthInterceptor
-    {
-        provide: HTTP_INTERCEPTORS,
-        useClass: AuthInterceptor,
-        multi: true
-    },
-
-        // 3. Configuración de Apollo GraphQL
-        // Usamos provideApollo que registra el servicio 'Apollo' automáticamente
-        provideApollo(() => 
-    {
-        const httpLink = inject(HttpLink);
-
-        return {
-        link: httpLink.create({ uri: 'http://localhost:3000/graphql' }),
-        cache: new InMemoryCache(),
-        };
-    }),
+            return {
+                link: httpLink.create({ uri: 'http://localhost:3000/graphql' }),
+                cache: new InMemoryCache(),
+            };
+        }),
     ],
 });

@@ -10,11 +10,11 @@ import { JwtModule } from '@nestjs/jwt';
         UsersModule,
         PassportModule,
         JwtModule.register({
-            secret: 'SUPER_SECRET_KEY_DEV_ONLY', // Move to .env in production
+            secret: 'SUPER_SECRET_KEY_DEV_ONLY',
             signOptions: { expiresIn: '12h' },
         }),
     ],
     providers: [AuthService, AuthResolver],
 })
-export class AuthModule 
+export class AuthModule
 {}

@@ -3,18 +3,17 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @ObjectType()
 @Entity('classrooms')
-export class Classroom 
+export class Classroom
 {
     @Field(() => ID)
     @PrimaryGeneratedColumn()
-        id: number;
+    id: number;
 
     @Field()
     @Column()
-        name: string; // Ej: "Laboratorio A", "Aula 101"
+    name: string;
 
     @Field({ nullable: true })
     @Column({ nullable: true })
-    // CAMBIO CLAVE: Agregamos '?' para decirle a TypeScript que puede ser undefined
-        building?: string;
+    building?: string;
 }

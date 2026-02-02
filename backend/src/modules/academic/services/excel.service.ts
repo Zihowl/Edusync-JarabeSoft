@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as xlsx from 'xlsx';
 
-// Entidades
 import { Teacher } from '../entities/teacher.entity';
 import { Subject } from '../entities/subject.entity';
 import { Classroom } from '../entities/classroom.entity';
@@ -11,7 +10,7 @@ import { Group } from '../entities/group.entity';
 import { ScheduleSlot } from '../entities/schedule-slot.entity';
 
 @Injectable()
-export class ExcelService 
+export class ExcelService
 {
     constructor(
         @InjectRepository(Teacher) private teacherRepo: Repository<Teacher>,
@@ -22,16 +21,12 @@ export class ExcelService
     ) 
     {}
 
-    // Standard: PascalCase
     async ProcessScheduleFile(buffer: Buffer) 
     {
-        // 1. Leer el archivo desde memoria
         const workbook = xlsx.read(buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
 
-        // 2. Convertir a JSON (tipado seguro)
-        // Some xlsx utils are not well typed; allow a small exception here
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         const rawData = (xlsx.utils as any).sheet_to_json(sheet) as Array<Record<string, unknown>>;
 
@@ -40,7 +35,6 @@ export class ExcelService
             throw new BadRequestException('El archivo Excel está vacío.');
         }
 
-        // Delegate to smaller function
         return this.ProcessScheduleRows(rawData);
     }
 
@@ -207,7 +201,7 @@ export class ExcelService
         if (d.includes('jue')) return 4;
         if (d.includes('vie')) return 5;
         if (d.includes('sáb') || d.includes('sab')) return 6;
-        return 0; // Domingo o error
+        return 0;
     }
 
     private FormatTime(time: string | number): string 
@@ -215,8 +209,6 @@ export class ExcelService
         if (time === undefined || time === null) return '00:00:00';
         const t = typeof time === 'number' ? String(time) : time;
         if (!t) return '00:00:00';
-        // Si excel manda decimales (ej. 0.5 para 12:00), aquí habría que convertir.
-        // Por ahora asumimos texto plano y validamos la presencia de ':'
         return t.includes(':') ? t : '00:00:00';
     }
 }
