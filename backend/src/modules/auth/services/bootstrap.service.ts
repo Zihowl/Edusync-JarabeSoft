@@ -37,7 +37,7 @@ export class BootstrapService implements OnApplicationBootstrap
         const randomHex = crypto.randomBytes(4).toString('hex');
         const email = `admin-${randomHex}@setup.local`;
 
-        const { password, hash } = await this.GenerateTempPassword();
+        const { password, hash } = await this.GenerateTempPassword(32);
 
         const superAdmin = this.userRepository.create({
             email,
@@ -52,11 +52,63 @@ export class BootstrapService implements OnApplicationBootstrap
         this.PrintCredentials(email, password);
     }
 
-    private async GenerateTempPassword() 
+    private async GenerateTempPassword(length: number) 
     {
-        const password = crypto.randomBytes(16).toString('hex') + 'Aa1!';
+        const password = this.GenerateComplexPassword(length);
         const hash = await argon2.hash(password);
         return { password, hash };
+    }
+
+    private GenerateComplexPassword(length: number) 
+    {
+        if (length < 4) 
+        {
+            throw new Error('Password length must be at least 4.');
+        }
+
+        const charset = this.GetPasswordCharset();
+        const required = this.PickRequiredChars(charset);
+        const remaining = this.FillRandomChars(
+            charset.all,
+            length - required.length,
+        );
+        const combined = this.ShuffleArray([...required, ...remaining]);
+        return combined.join('');
+    }
+
+    private GetPasswordCharset() 
+    {
+        const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const lower = 'abcdefghijklmnopqrstuvwxyz';
+        const numbers = '0123456789';
+        const symbols = '!@#$%^&*()-_=+[]{}<>?';
+        return { upper, lower, numbers, symbols, all: upper + lower + numbers + symbols };
+    }
+
+    private PickRequiredChars(charset: ReturnType<BootstrapService['GetPasswordCharset']>) 
+    {
+        return [
+            charset.upper[crypto.randomInt(charset.upper.length)],
+            charset.lower[crypto.randomInt(charset.lower.length)],
+            charset.numbers[crypto.randomInt(charset.numbers.length)],
+            charset.symbols[crypto.randomInt(charset.symbols.length)],
+        ];
+    }
+
+    private FillRandomChars(pool: string, count: number) 
+    {
+        return Array.from({ length: count }, () => pool[crypto.randomInt(pool.length)]);
+    }
+
+    private ShuffleArray<T>(items: T[]) 
+    {
+        for (let i = items.length - 1; i > 0; i--) 
+        {
+            const j = crypto.randomInt(i + 1);
+            [items[i], items[j]] = [items[j], items[i]];
+        }
+
+        return items;
     }
 
     private PrintCredentials(email: string, password: string) 

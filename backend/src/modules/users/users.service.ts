@@ -30,8 +30,9 @@ export class UsersService
     async CreateAdmin(input: CreateAdminInput): Promise<User> 
     {
         await this.EnsureNotExists(input.email);
+        this.EnsureEmailFormat(input.email);
         await this.EnsureDomainAllowed(input.email);
-        const tempPassword = this.GenerateTempPassword();
+        const tempPassword = this.GenerateTempPassword(16);
         const hash = await argon2.hash(tempPassword);
         const savedUser = await this.CreateAndSaveAdmin(input, hash);
         this.SendWelcomeEmail(input.email, tempPassword);
@@ -63,9 +64,70 @@ export class UsersService
         }
     }
 
-    private GenerateTempPassword() 
+    private EnsureEmailFormat(email: string) 
     {
-        return crypto.randomBytes(8).toString('hex') + 'Aa1!';
+        const emailPattern = /^[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/;
+        if (!emailPattern.test(email)) 
+        {
+            throw new BadRequestException('Email inválido');
+        }
+    }
+
+    private GenerateTempPassword(length: number) 
+    {
+        return this.GenerateComplexPassword(length);
+    }
+
+    private GenerateComplexPassword(length: number) 
+    {
+        if (length < 4) 
+        {
+            throw new BadRequestException('La longitud de la contraseña es inválida.');
+        }
+
+        const charset = this.GetPasswordCharset();
+        const required = this.PickRequiredChars(charset);
+        const remaining = this.FillRandomChars(
+            charset.all,
+            length - required.length,
+        );
+        const combined = this.ShuffleArray([...required, ...remaining]);
+        return combined.join('');
+    }
+
+    private GetPasswordCharset() 
+    {
+        const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const lower = 'abcdefghijklmnopqrstuvwxyz';
+        const numbers = '0123456789';
+        const symbols = '!@#$%^&*()-_=+[]{}<>?';
+        return { upper, lower, numbers, symbols, all: upper + lower + numbers + symbols };
+    }
+
+    private PickRequiredChars(charset: ReturnType<UsersService['GetPasswordCharset']>) 
+    {
+        return [
+            charset.upper[crypto.randomInt(charset.upper.length)],
+            charset.lower[crypto.randomInt(charset.lower.length)],
+            charset.numbers[crypto.randomInt(charset.numbers.length)],
+            charset.symbols[crypto.randomInt(charset.symbols.length)],
+        ];
+    }
+
+    private FillRandomChars(pool: string, count: number) 
+    {
+        return Array.from({ length: count }, () => pool[crypto.randomInt(pool.length)]);
+    }
+
+    private ShuffleArray<T>(items: T[]) 
+    {
+        for (let i = items.length - 1; i > 0; i--) 
+        {
+            const j = crypto.randomInt(i + 1);
+            [items[i], items[j]] = [items[j], items[i]];
+        }
+
+        return items;
     }
 
     private async CreateAndSaveAdmin(input: CreateAdminInput, hash: string) 
