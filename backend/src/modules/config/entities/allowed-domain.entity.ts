@@ -7,9 +7,9 @@ export class AllowedDomain
 {
     @Field(() => ID)
     @PrimaryGeneratedColumn()
-        id: number;
+    id: number;
 
     @Field()
     @Column({ unique: true })
-        domain: string;
+    domain: string;
 }
