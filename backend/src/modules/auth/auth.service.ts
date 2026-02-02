@@ -23,7 +23,7 @@ export class AuthService
             return user;
         }
 
-        throw new UnauthorizedException('Invalid credentials');
+        throw new UnauthorizedException('Credenciales inválidas');
     }
 
     Login(user: User) 

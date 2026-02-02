@@ -4,9 +4,14 @@ import {
     UseInterceptors,
     UploadedFile,
     BadRequestException,
+    UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from '@nestjs/passport';
 import { ExcelService } from './services/excel.service';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/guards/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 
 @Controller('academic')
 export class AcademicController 
@@ -15,6 +20,8 @@ export class AcademicController
     {}
 
     @Post('upload-schedule')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles(UserRole.ADMIN_HORARIOS)
     @UseInterceptors(FileInterceptor('file'))
     async UploadSchedule(@UploadedFile() file: Express.Multer.File) 
     {

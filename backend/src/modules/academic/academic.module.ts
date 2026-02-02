@@ -9,6 +9,7 @@ import { ExcelService } from './services/excel.service';
 import { AcademicController } from './academic.controller';
 import { TeachersService } from './services/teachers.service';
 import { TeachersResolver } from './resolvers/teachers.resolver';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Module({
     imports: [TypeOrmModule.forFeature([Teacher, Subject, Classroom, Group, ScheduleSlot])],
@@ -17,6 +18,7 @@ import { TeachersResolver } from './resolvers/teachers.resolver';
         ExcelService,
         TeachersService,
         TeachersResolver,
+        RolesGuard,
     ],
     exports: [ExcelService],
 })

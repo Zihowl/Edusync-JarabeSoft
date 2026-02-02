@@ -5,10 +5,11 @@ import { UsersService } from './users.service';
 import { UsersResolver } from './users.resolver';
 import { BootstrapService } from '../auth/services/bootstrap.service';
 import { ConfigModule } from '../config/config.module';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Module({
     imports: [TypeOrmModule.forFeature([User]), ConfigModule],
-    providers: [UsersService, UsersResolver, BootstrapService],
+    providers: [UsersService, UsersResolver, BootstrapService, RolesGuard],
     exports: [UsersService],
 })
 export class UsersModule
