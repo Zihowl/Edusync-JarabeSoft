@@ -2,9 +2,14 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Apollo, gql } from 'apollo-angular';
-import { IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonList, IonItem, IonLabel, IonSelect, IonSelectOption, IonButton, IonIcon } from '@ionic/angular/standalone';
+import { 
+    IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, 
+    IonBackButton, IonList, IonItem, IonLabel, IonSelect, 
+    IonSelectOption, IonButton, IonIcon, IonFab, IonFabButton, 
+    IonModal, IonInput, IonFooter, IonNote
+} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { trashOutline } from 'ionicons/icons';
+import { trashOutline, addOutline, pencilOutline, homeOutline } from 'ionicons/icons';
 
 const GET_CLASSROOMS = gql`
     query GetClassrooms {
@@ -22,9 +27,18 @@ const GET_BUILDINGS = gql`
     }
 `;
 
-const ADD_CLASSROOM = gql`
+const CREATE_CLASSROOM = gql`
     mutation CreateClassroom($input: CreateClassroomInput!) {
         CreateClassroom(input: $input) {
+            id
+            name
+        }
+    }
+`;
+
+const UPDATE_CLASSROOM = gql`
+    mutation UpdateClassroom($input: UpdateClassroomInput!) {
+        UpdateClassroom(input: $input) {
             id
             name
         }
@@ -40,46 +54,94 @@ const REMOVE_CLASSROOM = gql`
 @Component({
     selector: 'app-classrooms',
     standalone: true,
-    imports: [CommonModule, FormsModule, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonList, IonItem, IonLabel, IonSelect, IonSelectOption, IonButton, IonIcon],
+    imports: [
+        CommonModule, FormsModule, IonContent, IonHeader, IonToolbar, 
+        IonTitle, IonButtons, IonBackButton, IonList, IonItem, 
+        IonLabel, IonSelect, IonSelectOption, IonButton, IonIcon, 
+        IonFab, IonFabButton, IonModal, IonInput, IonFooter, IonNote
+    ],
     template: `
         <ion-header>
             <ion-toolbar color="primary">
                 <ion-buttons slot="start">
                     <ion-back-button defaultHref="/admin"></ion-back-button>
                 </ion-buttons>
-                <ion-title>Catálogo de Aulas</ion-title>
+                <ion-title>Aulas</ion-title>
             </ion-toolbar>
         </ion-header>
 
-        <ion-content class="ion-padding">
-            <div class="card mb-4 bg-dark text-white border-secondary">
-                <div class="card-body d-flex gap-2">
-                    <input type="text" class="form-control bg-dark text-white border-secondary" [(ngModel)]="newName" placeholder="Nombre del aula" (keyup.enter)="AddClassroom()">
-                    <ion-select placeholder="Edificio (opcional)" interface="popover" [(ngModel)]="newBuildingId">
-                        <ion-select-option *ngFor="let b of buildings" [value]="b.id">{{ b.name }}</ion-select-option>
-                    </ion-select>
-                    <button class="btn btn-primary" (click)="AddClassroom()" [disabled]="!newName">Agregar</button>
-                </div>
+        <ion-content>
+            <ion-list lines="inset">
+                <ion-item *ngFor="let c of classrooms">
+                    <ion-icon name="home-outline" slot="start" color="primary"></ion-icon>
+                    <ion-label>
+                        <h2 class="fw-bold">{{ c.name }}</h2>
+                        <p *ngIf="c.building">Edificio: <strong>{{ c.building.name }}</strong></p>
+                        <p *ngIf="!c.building" class="opacity-50">Sin edificio asignado</p>
+                    </ion-label>
+                    <ion-buttons slot="end">
+                        <ion-button color="medium" (click)="OpenModal(c)">
+                            <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
+                        </ion-button>
+                        <ion-button color="danger" (click)="RemoveClassroom(c.id)">
+                            <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                        </ion-button>
+                    </ion-buttons>
+                </ion-item>
+            </ion-list>
+
+            <div *ngIf="classrooms.length === 0" class="ion-text-center ion-padding mt-5 opacity-50">
+                <ion-icon name="home-outline" style="font-size: 64px;"></ion-icon>
+                <p>No hay aulas registradas</p>
             </div>
 
-            <ion-list>
-                <ion-item *ngFor="let c of classrooms">
-                    <ion-label>
-                        <h2>{{ c.name }}</h2>
-                        <p *ngIf="c.building">Edificio: {{ c.building.name }}</p>
-                    </ion-label>
-                    <ion-button fill="clear" color="danger" slot="end" (click)="RemoveClassroom(c.id)">
-                        <ion-icon name="trash-outline"></ion-icon>
-                    </ion-button>
-                </ion-item>
+            <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+                <ion-fab-button (click)="OpenModal()">
+                    <ion-icon name="add-outline"></ion-icon>
+                </ion-fab-button>
+            </ion-fab>
 
-                <div *ngIf="classrooms.length === 0" class="text-center p-5 text-muted">
-                    No se encontraron aulas.
-                </div>
-            </ion-list>
+            <ion-modal [isOpen]="isModalOpen" (didDismiss)="isModalOpen = false">
+                <ng-template>
+                    <ion-header>
+                        <ion-toolbar color="primary">
+                            <ion-title>{{ editingItem ? 'Editar' : 'Nueva' }} Aula</ion-title>
+                            <ion-buttons slot="end">
+                                <ion-button (click)="isModalOpen = false">Cerrar</ion-button>
+                            </ion-buttons>
+                        </ion-toolbar>
+                    </ion-header>
+                    <ion-content class="ion-padding">
+                        <ion-list>
+                            <ion-item fill="outline" class="mb-3">
+                                <ion-label position="stacked">Nombre del aula / Salón</ion-label>
+                                <ion-input [(ngModel)]="formData.name" placeholder="Ej. Laboratorio 1"></ion-input>
+                            </ion-item>
+                            
+                            <ion-item fill="outline">
+                                <ion-label position="stacked">Edificio al que pertenece</ion-label>
+                                <ion-select interface="popover" [(ngModel)]="formData.buildingId" placeholder="Seleccionar edificio">
+                                    <ion-select-option [value]="null">Sin edificio</ion-select-option>
+                                    <ion-select-option *ngFor="let b of buildings" [value]="b.id">
+                                        {{ b.name }}
+                                    </ion-select-option>
+                                </ion-select>
+                            </ion-item>
+                        </ion-list>
+                    </ion-content>
+                    <ion-footer class="ion-padding">
+                        <ion-button expand="block" (click)="Save()" [disabled]="!formData.name">
+                            {{ editingItem ? 'Actualizar' : 'Guardar' }}
+                        </ion-button>
+                    </ion-footer>
+                </ng-template>
+            </ion-modal>
         </ion-content>
     `,
-    styleUrls: ['./classrooms.component.scss']
+    styles: [`
+        ion-item { --padding-start: 16px; }
+        .mb-3 { margin-bottom: 1rem; }
+    `]
 })
 export class ClassroomsComponent implements OnInit
 {
@@ -87,11 +149,15 @@ export class ClassroomsComponent implements OnInit
 
     classrooms: any[] = [];
     buildings: any[] = [];
-    newName: string = '';
-    newBuildingId: number | null = null;
+    isModalOpen = false;
+    editingItem: any = null;
+    formData = {
+        name: '',
+        buildingId: null as number | null
+    };
 
     ngOnInit() {
-        addIcons({ trashOutline });
+        addIcons({ trashOutline, addOutline, pencilOutline, homeOutline });
         this.LoadBuildings();
         this.LoadClassrooms();
     }
@@ -99,12 +165,7 @@ export class ClassroomsComponent implements OnInit
     LoadBuildings() {
         this.apollo.watchQuery<any>({ query: GET_BUILDINGS, fetchPolicy: 'network-only' }).valueChanges.subscribe({
             next: (res: any) => {
-                const data = res?.data;
-                this.buildings = data?.GetBuildings ?? [];
-            },
-            error: (err) => {
-                console.error('Error loading buildings:', err);
-                this.buildings = [];
+                this.buildings = res?.data?.GetBuildings ?? [];
             }
         });
     }
@@ -112,32 +173,77 @@ export class ClassroomsComponent implements OnInit
     LoadClassrooms() {
         this.apollo.watchQuery<any>({ query: GET_CLASSROOMS, fetchPolicy: 'network-only' }).valueChanges.subscribe({
             next: (res: any) => {
-                const data = res?.data;
-                if (!data) {
-                    console.error('GetClassrooms returned no data:', res);
-                    this.classrooms = [];
-                    return;
-                }
-
-                this.classrooms = data.GetClassrooms ?? [];
-            },
-            error: (err) => {
-                alert('Error al cargar aulas: ' + err.message);
+                this.classrooms = res?.data?.GetClassrooms ?? [];
             }
         });
     }
 
-    AddClassroom() {
-        if (!this.newName) return;
-        this.apollo.mutate({
-            mutation: ADD_CLASSROOM,
-            variables: { input: { name: this.newName, buildingId: this.newBuildingId } },
-            refetchQueries: [{ query: GET_CLASSROOMS }]
-        }).subscribe({ next: () => { this.newName = ''; this.newBuildingId = null; }, error: (err) => alert('Error al crear aula: ' + err.message) });
+    OpenModal(item: any = null) {
+        this.editingItem = item;
+        if (item) {
+            this.formData = { name: item.name, buildingId: item.building?.id ?? null };
+        } else {
+            this.formData = { name: '', buildingId: null };
+        }
+        this.isModalOpen = true;
+    }
+
+    Save() {
+        if (!this.formData.name) return;
+
+        const classroomInput: any = { 
+            name: this.formData.name 
+        };
+
+        if (this.formData.buildingId) {
+            classroomInput.buildingId = Number(this.formData.buildingId);
+        } else {
+            classroomInput.buildingId = null;
+        }
+
+        if (this.editingItem) {
+            this.apollo.mutate({
+                mutation: UPDATE_CLASSROOM,
+                variables: { 
+                    input: { 
+                        id: Number(this.editingItem.id),
+                        ...classroomInput
+                    } 
+                },
+                refetchQueries: [{ query: GET_CLASSROOMS }]
+            }).subscribe({
+                next: () => { 
+                    this.isModalOpen = false;
+                    this.editingItem = null;
+                },
+                error: (err) => {
+                    console.error('Update classroom error:', err);
+                    alert('Error al actualizar: ' + err.message);
+                }
+            });
+        } else {
+            this.apollo.mutate({
+                mutation: CREATE_CLASSROOM,
+                variables: { input: classroomInput },
+                refetchQueries: [{ query: GET_CLASSROOMS }]
+            }).subscribe({
+                next: () => { this.isModalOpen = false; },
+                error: (err) => {
+                    console.error('Create classroom error:', err);
+                    alert('Error al crear: ' + err.message);
+                }
+            });
+        }
     }
 
     RemoveClassroom(id: number) {
-        if (!confirm('¿Eliminar esta aula?')) return;
-        this.apollo.mutate({ mutation: REMOVE_CLASSROOM, variables: { id: parseInt(id.toString()) }, refetchQueries: [{ query: GET_CLASSROOMS }] }).subscribe();
+        if (!confirm('¿Seguro que desea eliminar esta aula? Esta acción no se puede deshacer.')) return;
+        this.apollo.mutate({
+            mutation: REMOVE_CLASSROOM,
+            variables: { id: parseInt(id.toString()) },
+            refetchQueries: [{ query: GET_CLASSROOMS }]
+        }).subscribe({
+            error: (err) => alert('Error al eliminar: ' + err.message)
+        });
     }
 }

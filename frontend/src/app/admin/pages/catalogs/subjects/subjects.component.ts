@@ -2,9 +2,14 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Apollo, gql } from 'apollo-angular';
-import { IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonList, IonItem, IonLabel, IonButton, IonIcon } from '@ionic/angular/standalone';
+import { 
+    IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, 
+    IonBackButton, IonList, IonItem, IonLabel, IonButton, 
+    IonIcon, IonFab, IonFabButton, IonModal, IonInput, 
+    IonFooter
+} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { trashOutline } from 'ionicons/icons';
+import { trashOutline, addOutline, pencilOutline, bookOutline } from 'ionicons/icons';
 
 const GET_SUBJECTS = gql`
     query GetSubjects {
@@ -16,9 +21,18 @@ const GET_SUBJECTS = gql`
     }
 `;
 
-const ADD_SUBJECT = gql`
+const CREATE_SUBJECT = gql`
     mutation CreateSubject($input: CreateSubjectInput!) {
         CreateSubject(input: $input) {
+            id
+            name
+        }
+    }
+`;
+
+const UPDATE_SUBJECT = gql`
+    mutation UpdateSubject($input: UpdateSubjectInput!) {
+        UpdateSubject(input: $input) {
             id
             code
             name
@@ -35,87 +49,178 @@ const REMOVE_SUBJECT = gql`
 @Component({
     selector: 'app-subjects',
     standalone: true,
-    imports: [CommonModule, FormsModule, IonContent, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonList, IonItem, IonLabel, IonButton, IonIcon],
+    imports: [
+        CommonModule, FormsModule, IonContent, IonHeader, IonToolbar, 
+        IonTitle, IonButtons, IonBackButton, IonList, IonItem, 
+        IonLabel, IonButton, IonIcon, IonFab, IonFabButton, 
+        IonModal, IonInput, IonFooter
+    ],
     template: `
         <ion-header>
             <ion-toolbar color="primary">
                 <ion-buttons slot="start">
                     <ion-back-button defaultHref="/admin"></ion-back-button>
                 </ion-buttons>
-                <ion-title>Catálogo de Materias</ion-title>
+                <ion-title>Materias</ion-title>
             </ion-toolbar>
         </ion-header>
 
-        <ion-content class="ion-padding">
-            <div class="card mb-4 bg-dark text-white border-secondary">
-                <div class="card-body d-flex gap-2">
-                    <input type="text" class="form-control bg-dark text-white border-secondary" [(ngModel)]="newCode" placeholder="Clave" (keyup.enter)="AddSubject()">
-                    <input type="text" class="form-control bg-dark text-white border-secondary" [(ngModel)]="newName" placeholder="Nombre" (keyup.enter)="AddSubject()">
-                    <button class="btn btn-primary" (click)="AddSubject()" [disabled]="!newCode || !newName">Agregar</button>
-                </div>
-            </div>
-
-            <ion-list>
+        <ion-content>
+            <ion-list lines="inset">
                 <ion-item *ngFor="let s of subjects">
+                    <ion-icon name="book-outline" slot="start" color="primary"></ion-icon>
                     <ion-label>
-                        <h2>{{ s.name }}</h2>
+                        <h2 class="fw-bold">{{ s.name }}</h2>
                         <p>Clave: {{ s.code }}</p>
                     </ion-label>
-                    <ion-button fill="clear" color="danger" slot="end" (click)="RemoveSubject(s.id)">
-                        <ion-icon name="trash-outline"></ion-icon>
-                    </ion-button>
+                    <ion-buttons slot="end">
+                        <ion-button color="medium" (click)="OpenModal(s)">
+                            <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
+                        </ion-button>
+                        <ion-button color="danger" (click)="RemoveSubject(s.id)">
+                            <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                        </ion-button>
+                    </ion-buttons>
                 </ion-item>
-
-                <div *ngIf="subjects.length === 0" class="text-center p-5 text-muted">
-                    No se encontraron materias.
-                </div>
             </ion-list>
+
+            <div *ngIf="subjects.length === 0" class="ion-text-center ion-padding mt-5 opacity-50">
+                <ion-icon name="book-outline" style="font-size: 64px;"></ion-icon>
+                <p>No hay materias registradas</p>
+            </div>
+
+            <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+                <ion-fab-button (click)="OpenModal()">
+                    <ion-icon name="add-outline"></ion-icon>
+                </ion-fab-button>
+            </ion-fab>
+
+            <ion-modal [isOpen]="isModalOpen" (didDismiss)="isModalOpen = false">
+                <ng-template>
+                    <ion-header>
+                        <ion-toolbar color="primary">
+                            <ion-title>{{ editingItem ? 'Editar' : 'Nueva' }} Materia</ion-title>
+                            <ion-buttons slot="end">
+                                <ion-button (click)="isModalOpen = false">Cerrar</ion-button>
+                            </ion-buttons>
+                        </ion-toolbar>
+                    </ion-header>
+                    <ion-content class="ion-padding">
+                        <ion-list>
+                            <ion-item fill="outline" class="mb-3">
+                                <ion-label position="stacked">Clave de la materia</ion-label>
+                                <ion-input [(ngModel)]="formData.code" placeholder="Ej. MAT101"></ion-input>
+                            </ion-item>
+                            
+                            <ion-item fill="outline">
+                                <ion-label position="stacked">Nombre de la materia</ion-label>
+                                <ion-input [(ngModel)]="formData.name" placeholder="Ej. Matemáticas I"></ion-input>
+                            </ion-item>
+                        </ion-list>
+                    </ion-content>
+                    <ion-footer class="ion-padding">
+                        <ion-button expand="block" (click)="Save()" [disabled]="!formData.code || !formData.name">
+                            {{ editingItem ? 'Actualizar' : 'Guardar' }}
+                        </ion-button>
+                    </ion-footer>
+                </ng-template>
+            </ion-modal>
         </ion-content>
     `,
-    styleUrls: ['./subjects.component.scss']
+    styles: [`
+        ion-item { --padding-start: 16px; }
+        .mb-3 { margin-bottom: 1rem; }
+    `]
 })
 export class SubjectsComponent implements OnInit
 {
     private apollo = inject(Apollo);
 
     subjects: any[] = [];
-    newCode: string = '';
-    newName: string = '';
+    isModalOpen = false;
+    editingItem: any = null;
+    formData = {
+        code: '',
+        name: ''
+    };
 
     ngOnInit() {
-        addIcons({ trashOutline });
+        addIcons({ trashOutline, addOutline, pencilOutline, bookOutline });
         this.LoadSubjects();
     }
 
     LoadSubjects() {
         this.apollo.watchQuery<any>({ query: GET_SUBJECTS, fetchPolicy: 'network-only' }).valueChanges.subscribe({
             next: (res: any) => {
-                const data = res?.data;
-                if (!data) {
-                    console.error('GetSubjects returned no data:', res);
-                    this.subjects = [];
-                    return;
-                }
-
-                this.subjects = data.GetSubjects ?? [];
+                this.subjects = res?.data?.GetSubjects ?? [];
             },
             error: (err) => {
-                alert('Error al cargar materias: ' + err.message);
+                console.error('Error loading subjects:', err);
             }
         });
     }
 
-    AddSubject() {
-        if (!this.newCode || !this.newName) return;
-        this.apollo.mutate({
-            mutation: ADD_SUBJECT,
-            variables: { input: { code: this.newCode, name: this.newName } },
-            refetchQueries: [{ query: GET_SUBJECTS }]
-        }).subscribe({ next: () => { this.newCode = ''; this.newName = ''; }, error: (err) => alert('Error al crear materia: ' + err.message) });
+    OpenModal(item: any = null) {
+        this.editingItem = item;
+        if (item) {
+            this.formData = { code: item.code, name: item.name };
+        } else {
+            this.formData = { code: '', name: '' };
+        }
+        this.isModalOpen = true;
+    }
+
+    Save() {
+        if (!this.formData.code || !this.formData.name) return;
+
+        const subjectInput = {
+            code: this.formData.code,
+            name: this.formData.name
+        };
+
+        if (this.editingItem) {
+            this.apollo.mutate({
+                mutation: UPDATE_SUBJECT,
+                variables: { 
+                    input: { 
+                        id: Number(this.editingItem.id), 
+                        ...subjectInput 
+                    } 
+                },
+                refetchQueries: [{ query: GET_SUBJECTS }]
+            }).subscribe({
+                next: () => { 
+                    this.isModalOpen = false;
+                    this.editingItem = null;
+                },
+                error: (err) => {
+                    console.error('Update subject error:', err);
+                    alert('Error al actualizar: ' + err.message);
+                }
+            });
+        } else {
+            this.apollo.mutate({
+                mutation: CREATE_SUBJECT,
+                variables: { input: subjectInput },
+                refetchQueries: [{ query: GET_SUBJECTS }]
+            }).subscribe({
+                next: () => { this.isModalOpen = false; },
+                error: (err) => {
+                    console.error('Create subject error:', err);
+                    alert('Error al crear: ' + err.message);
+                }
+            });
+        }
     }
 
     RemoveSubject(id: number) {
-        if (!confirm('¿Eliminar esta materia?')) return;
-        this.apollo.mutate({ mutation: REMOVE_SUBJECT, variables: { id: parseInt(id.toString()) }, refetchQueries: [{ query: GET_SUBJECTS }] }).subscribe();
+        if (!confirm('¿Seguro que desea eliminar esta materia? Esta acción no se puede deshacer.')) return;
+        this.apollo.mutate({
+            mutation: REMOVE_SUBJECT,
+            variables: { id: parseInt(id.toString()) },
+            refetchQueries: [{ query: GET_SUBJECTS }]
+        }).subscribe({
+            error: (err) => alert('Error al eliminar: ' + err.message)
+        });
     }
 }

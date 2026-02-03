@@ -103,11 +103,11 @@ export class DashboardComponent implements OnInit
         { title: 'Configuración', icon: 'settings-outline', route: '/admin/config', roles: ['SUPER_ADMIN'], desc: 'Gestionar ciclo escolar y dominios.' },
         { title: 'Usuarios', icon: 'people-outline', route: '/admin/users', roles: ['SUPER_ADMIN'], desc: 'Altas y bajas de administradores.' },
         { title: 'Carga de Horarios', icon: 'cloud-upload-outline', route: '/admin/upload', color: 'tertiary', roles: ['ADMIN_HORARIOS'], desc: 'Importar archivos Excel masivos.' },
-        { title: 'Docentes', icon: 'people-outline', route: '/admin/catalogs/teachers', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Ver lista de maestros importados.' },
-        { title: 'Materias', icon: 'book-outline', route: '/admin/catalogs/subjects', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Gestionar materias.' },
-        { title: 'Grupos', icon: 'layers-outline', route: '/admin/catalogs/groups', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Gestionar grupos y subgrupos.' },
-        { title: 'Aulas', icon: 'business-outline', route: '/admin/catalogs/classrooms', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Gestionar aulas.' },
-        { title: 'Edificios', icon: 'home-outline', route: '/admin/catalogs/buildings', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Gestionar edificios.' }
+        { title: 'Docentes', icon: 'people-outline', route: '/admin/catalogs/teachers', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Catálogo de personal docente.' },
+        { title: 'Materias', icon: 'book-outline', route: '/admin/catalogs/subjects', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Catálogo de materias.' },
+        { title: 'Grupos', icon: 'layers-outline', route: '/admin/catalogs/groups', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Estructura de grupos y subgrupos.' },
+        { title: 'Aulas', icon: 'business-outline', route: '/admin/catalogs/classrooms', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Espacios físicos y salones.' },
+        { title: 'Edificios', icon: 'home-outline', route: '/admin/catalogs/buildings', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Infraestructura del plantel.' }
     ];
 
     ngOnInit() 

@@ -14,7 +14,7 @@ export class GroupsService
     ) {}
 
     async FindAll(): Promise<Group[]> {
-        return await this.groupRepo.find({ order: { name: 'ASC' } });
+        return await this.groupRepo.find({ relations: ['parent'], order: { name: 'ASC' } });
     }
 
     async FindOne(id: number): Promise<Group | null> {
