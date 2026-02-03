@@ -1,26 +1,30 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { RouterModule } from '@angular/router';
+import { Observable, map } from 'rxjs';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonButtons,
-  IonButton,
-  IonIcon,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonBadge
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonBadge
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline } from 'ionicons/icons';
+
+type Role = 'SUPER_ADMIN' | 'ADMIN_HORARIOS';
+interface Card { title: string; icon: string; route: string; color?: string; roles: Role[]; desc: string; }
 
 @Component({
     selector: 'app-dashboard',
@@ -44,12 +48,13 @@ import { settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline } fro
         IonCol,
         IonBadge
     ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <ion-header>
             <ion-toolbar color="primary">
                 <ion-title>EduSync Admin</ion-title>
                 <ion-buttons slot="end">
-                    <ion-badge color="light" class="me-2">{{ role }}</ion-badge>
+                    <ion-badge color="light" class="me-2">{{ (role$ | async) }}</ion-badge>
                     <ion-button (click)="Logout()">
                         <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
                     </ion-button>
@@ -58,68 +63,33 @@ import { settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline } fro
         </ion-header>
 
         <ion-content class="ion-padding">
-            <div class="container">
-                <h1 class="mb-4">Panel de Control</h1>
+            <ion-grid class="ion-margin-top">
+                <ion-row>
+                    <ion-col size="12" size-md="6">
+                        <h1 class="ion-no-margin ion-text-start ion-margin-start">Panel de Control</h1>
+                    </ion-col>
+                </ion-row>
 
-                <ion-grid>
+                <ng-container *ngIf="(role$ | async) as currentRole">
                     <ion-row>
-                        <ng-container *ngIf="role === 'SUPER_ADMIN'">
-                            <ion-col size="12" size-md="6">
-                                <ion-card button routerLink="/admin/config" class="h-100">
+                        <ng-container *ngFor="let card of cards; trackBy: trackByTitle">
+                            <ion-col *ngIf="card.roles.includes(currentRole as Role)" size="12" size-md="6">
+                                <ion-card button [routerLink]="card.route" class="h-100" [color]="card.color">
                                     <ion-card-header>
                                         <ion-card-title>
-                                            <ion-icon name="settings-outline" class="me-2"></ion-icon>
-                                            Configuración
+                                            <ion-icon [name]="card.icon" class="me-2"></ion-icon>
+                                            {{ card.title }}
                                         </ion-card-title>
                                     </ion-card-header>
                                     <ion-card-content>
-                                        Gestionar ciclo escolar y dominios.
+                                        {{ card.desc }}
                                     </ion-card-content>
-                                </ion-card>
-                            </ion-col>
-
-                            <ion-col size="12" size-md="6">
-                                <ion-card button routerLink="/admin/users" class="h-100">
-                                    <ion-card-header>
-                                        <ion-card-title>
-                                            <ion-icon name="people-outline" class="me-2"></ion-icon>
-                                            Usuarios
-                                        </ion-card-title>
-                                    </ion-card-header>
-                                    <ion-card-content>
-                                        Altas y bajas de administradores.
-                                    </ion-card-content>
-                                </ion-card>
-                            </ion-col>
-                        </ng-container>
-
-                        <ng-container *ngIf="role === 'ADMIN_HORARIOS'">
-                            <ion-col size="12" size-md="6">
-                                <ion-card button routerLink="/admin/upload" class="h-100" color="tertiary">
-                                    <ion-card-header>
-                                        <ion-card-title>
-                                            <ion-icon name="cloud-upload-outline" class="me-2"></ion-icon>
-                                            Carga de Horarios
-                                        </ion-card-title>
-                                    </ion-card-header>
-                                    <ion-card-content>
-                                        Importar archivos Excel masivos.
-                                    </ion-card-content>
-                                </ion-card>
-                            </ion-col>
-
-                            <ion-col size="12" size-md="6">
-                                <ion-card button routerLink="/admin/catalogs/teachers" class="h-100" color="light">
-                                    <ion-card-header>
-                                        <ion-card-title>Docentes</ion-card-title>
-                                    </ion-card-header>
-                                    <ion-card-content>Ver lista de maestros importados.</ion-card-content>
                                 </ion-card>
                             </ion-col>
                         </ng-container>
                     </ion-row>
-                </ion-grid>
-            </div>
+                </ng-container>
+            </ion-grid>
         </ion-content>
     `
 })
@@ -127,13 +97,21 @@ export class DashboardComponent implements OnInit
 {
     private authService = inject(AuthService);
 
-    role: string | null = '';
+    role$: Observable<Role | null> = this.authService.user$.pipe(map(u => (u?.role ?? null) as Role | null));
+
+    cards: Card[] = [
+        { title: 'Configuración', icon: 'settings-outline', route: '/admin/config', roles: ['SUPER_ADMIN'], desc: 'Gestionar ciclo escolar y dominios.' },
+        { title: 'Usuarios', icon: 'people-outline', route: '/admin/users', roles: ['SUPER_ADMIN'], desc: 'Altas y bajas de administradores.' },
+        { title: 'Carga de Horarios', icon: 'cloud-upload-outline', route: '/admin/upload', color: 'tertiary', roles: ['ADMIN_HORARIOS'], desc: 'Importar archivos Excel masivos.' },
+        { title: 'Docentes', icon: 'people-outline', route: '/admin/catalogs/teachers', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Ver lista de maestros importados.' }
+    ];
 
     ngOnInit() 
     {
         addIcons({ settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline });
-        this.role = this.authService.GetUserRole();
     }
+
+    trackByTitle(index: number, card: Card) { return card.title; }
 
     Logout() 
     { 
