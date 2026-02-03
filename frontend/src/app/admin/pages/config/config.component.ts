@@ -61,11 +61,32 @@ const REMOVE_DOMAIN = gql`
 
         <ion-content class="ion-padding">
             <div class="container config-container">
-                <div class="card mb-4">
+
+                <h3>Ciclo Escolar</h3>
+                <form class="card mb-4 bg-dark text-white border-secondary">
+                    <div class="card-body d-flex gap-2 justify-content-between align-items-center border-opacity-0 flex-wrap">
+                        <div class="d-flex gap-2 align-items-center  flex-column col-lg-4 col-12 flex-grow-1">
+                            <label class="mb-0 text-white">Fecha inicio</label>
+                            <input type="date" class="form-control bg-dark text-white" [(ngModel)]="newSchoolYearStart" name="startDate">
+                        </div>
+                        <div class="d-flex gap-2 align-items-center  flex-column col-lg-4 col-12 flex-grow-1">
+                            <label class="mb-0 text-white">Fecha de cierre</label>
+                            <input type="date" class="form-control bg-dark text-white" [(ngModel)]="newSchoolYearEnd" name="endDate">
+                        </div>
+                        <div class="col-lg-2 col-12">
+                            <button class="btn btn-primary w-100" (click)="AddSchoolYear()" [disabled]="!newSchoolYearStart || !newSchoolYearEnd">
+                                Guardar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <br>
+                <h3>Dominios Permitidos</h3>
+                <div class="card mb-4 bg-dark text-white border-secondary">
                     <div class="card-body d-flex gap-2">
                         <input
                             type="text"
-                            class="form-control"
+                            class="form-control bg-dark text-white border-secondary"
                             [(ngModel)]="newDomain"
                             placeholder="ej: ceti.mx"
                             (keyup.enter)="AddDomain()">
@@ -75,7 +96,8 @@ const REMOVE_DOMAIN = gql`
                     </div>
                 </div>
 
-                <h3>Dominios Permitidos</h3>
+                <hr class="" style="margin: 1.1rem 0 1.3rem;">
+            
                 <ion-list>
                     <ion-item *ngFor="let d of domains">
                         <ion-label>{{ d.domain }}</ion-label>
@@ -98,6 +120,8 @@ export class ConfigComponent implements OnInit
 
     domains: any[] = [];
     newDomain: string = '';
+    newSchoolYearStart: string = '';
+    newSchoolYearEnd: string = '';
 
     ngOnInit() 
     {
@@ -132,6 +156,20 @@ export class ConfigComponent implements OnInit
             },
             error: (err) => alert('Error al agregar dominio: ' + err.message)
         });
+    }
+
+    AddSchoolYear()
+    {
+        if (!this.newSchoolYearStart || !this.newSchoolYearEnd)
+        {
+            return;
+        }
+
+        // TODO: Implement backend call to save the school year range
+        alert('Ciclo escolar agregado: ' + this.newSchoolYearStart + ' - ' + this.newSchoolYearEnd);
+
+        this.newSchoolYearStart = '';
+        this.newSchoolYearEnd = '';
     }
 
     RemoveDomain(id: number) 
