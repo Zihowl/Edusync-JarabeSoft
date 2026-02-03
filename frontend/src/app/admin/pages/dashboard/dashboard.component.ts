@@ -73,7 +73,7 @@ interface Card { title: string; icon: string; route: string; color?: string; rol
                 <ng-container *ngIf="(role$ | async) as currentRole">
                     <ion-row>
                         <ng-container *ngFor="let card of cards; trackBy: trackByTitle">
-                            <ion-col *ngIf="card.roles.includes(currentRole as Role)" size="12" size-md="6">
+                            <ion-col *ngIf="currentRole && card.roles.includes(currentRole)" size="12" size-md="6">
                                 <ion-card button [routerLink]="card.route" class="h-100" [color]="card.color">
                                     <ion-card-header>
                                         <ion-card-title>
