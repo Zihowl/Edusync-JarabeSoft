@@ -9,6 +9,7 @@ import { Classroom } from '../entities/classroom.entity';
 import { Building } from '../entities/building.entity';
 import { Group } from '../entities/group.entity';
 import { ScheduleSlot } from '../entities/schedule-slot.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Injectable()
 export class ExcelService
@@ -23,7 +24,7 @@ export class ExcelService
     ) 
     {}
 
-    async ProcessScheduleFile(buffer: Buffer) 
+    async ProcessScheduleFile(buffer: Buffer, uploadedBy?: User) 
     {
         const workbook = xlsx.read(buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
@@ -37,28 +38,28 @@ export class ExcelService
             throw new BadRequestException('El archivo Excel está vacío.');
         }
 
-        return this.ProcessScheduleRows(rawData);
+        return this.ProcessScheduleRows(rawData, uploadedBy);
     }
 
-    private async ProcessScheduleRows(rawData: Array<Record<string, unknown>>) 
+    private async ProcessScheduleRows(rawData: Array<Record<string, unknown>>, uploadedBy?: User) 
     {
         const errors: string[] = [];
         let processedCount = 0;
 
         for (const [index, row] of rawData.entries()) 
         {
-            const ok = await this.ProcessSingleRow(index, row, errors);
+            const ok = await this.ProcessSingleRow(index, row, errors, uploadedBy);
             if (ok) processedCount++;
         }
 
         return { success: true, processed: processedCount, errors };
     }
 
-    private async ProcessSingleRow(index: number, row: Record<string, unknown>, errors: string[]): Promise<boolean> 
+    private async ProcessSingleRow(index: number, row: Record<string, unknown>, errors: string[], uploadedBy?: User): Promise<boolean> 
     {
         try 
         {
-            await this.ImportRow(row);
+            await this.ImportRow(row, uploadedBy);
             return true;
         }
         catch (err: unknown) 
@@ -70,7 +71,7 @@ export class ExcelService
         }
     }
 
-    private async ImportRow(row: Record<string, unknown>) 
+    private async ImportRow(row: Record<string, unknown>, uploadedBy?: User) 
     {
         const parsed = this.getParsedRowValues(row);
         this.EnsureRequiredScheduleFields(parsed, row);
@@ -80,24 +81,35 @@ export class ExcelService
         const classroom = await this.findOrCreateClassroom(parsed.aulaName, parsed.edificio);
         const group = await this.findOrCreateGroup(parsed.grupoName);
 
-        await this.CreateScheduleSlot(subject, teacher, classroom, group, parsed.dia, parsed.horaInicio, parsed.horaFin);
+        await this.CreateScheduleSlot(subject, teacher, classroom, group, parsed.dia, parsed.horaInicio, parsed.horaFin, uploadedBy);
     }
 
-    private async CreateScheduleSlot(subject: Subject, teacher: Teacher, classroom: Classroom, group: Group, dia: string, horaInicio: string, horaFin: string) 
+    private async CreateScheduleSlot(
+        subject: Subject, 
+        teacher: Teacher, 
+        classroom: Classroom, 
+        group: Group, 
+        dia: string, 
+        horaInicio: string, 
+        horaFin: string,
+        uploadedBy?: User
+    ) 
     {
         const dayNumber = this.ParseDay(dia);
         const start = this.FormatTime(horaInicio);
         const end = this.FormatTime(horaFin);
 
-        const slot = this.scheduleRepo.create({
-            subject,
-            teacher,
-            classroom,
-            group,
-            dayOfWeek: dayNumber,
-            startTime: start,
-            endTime: end,
-        });
+        const slot = new ScheduleSlot();
+        slot.subject = subject;
+        slot.teacher = teacher;
+        slot.classroom = classroom;
+        slot.group = group;
+        slot.dayOfWeek = dayNumber;
+        slot.startTime = start;
+        slot.endTime = end;
+        slot.subgroup = null;
+        slot.isPublished = false; // Los horarios importados empiezan como borrador
+        slot.createdBy = uploadedBy ?? null;
 
         await this.scheduleRepo.save(slot);
     }

@@ -40,6 +40,18 @@ input CreateGroupInput {
   parentId: Int
 }
 
+input CreateScheduleSlotInput {
+  classroomId: Int!
+  dayOfWeek: Int!
+  endTime: String!
+  groupId: Int!
+  isPublished: Boolean = false
+  startTime: String!
+  subgroup: String
+  subjectId: Int!
+  teacherId: Int!
+}
+
 input CreateSubjectInput {
   code: String!
   name: String!
@@ -79,6 +91,7 @@ type Mutation {
   CreateBuilding(input: CreateBuildingInput!): Building!
   CreateClassroom(input: CreateClassroomInput!): Classroom!
   CreateGroup(input: CreateGroupInput!): Group!
+  CreateScheduleSlot(input: CreateScheduleSlotInput!): ScheduleSlot!
   CreateSubject(input: CreateSubjectInput!): Subject!
   CreateTeacher(input: CreateTeacherInput!): Teacher!
   Login(loginInput: LoginInput!): LoginResponse!
@@ -86,12 +99,17 @@ type Mutation {
   RemoveBuilding(id: Int!): Boolean!
   RemoveClassroom(id: Int!): Boolean!
   RemoveGroup(id: Int!): Boolean!
+  RemoveScheduleSlot(id: Int!): Boolean!
   RemoveSubject(id: Int!): Boolean!
   RemoveTeacher(id: Int!): Boolean!
   SetCurrentSchoolYear(endDate: String!, startDate: String!): SchoolYear!
+
+  """Retorna la cantidad de horarios actualizados"""
+  SetSchedulesPublished(ids: [Int!]!, isPublished: Boolean!): Int!
   UpdateBuilding(input: UpdateBuildingInput!): Building!
   UpdateClassroom(input: UpdateClassroomInput!): Classroom!
   UpdateGroup(input: UpdateGroupInput!): Group!
+  UpdateScheduleSlot(input: UpdateScheduleSlotInput!): ScheduleSlot!
   UpdateSubject(input: UpdateSubjectInput!): Subject!
   UpdateTeacher(input: UpdateTeacherInput!): Teacher!
 }
@@ -105,11 +123,39 @@ type Query {
   GetCurrentSchoolYear: SchoolYear
   GetGroup(id: Int!): Group
   GetGroups: [Group!]!
+  GetSchedule(id: Int!): ScheduleSlot
+  GetSchedules(filter: ScheduleFilterInput): [ScheduleSlot!]!
   GetSubject(id: Int!): Subject
   GetSubjects: [Subject!]!
   GetTeacher(id: Int!): Teacher
   GetTeachers: [Teacher!]!
   GetUsers: [User!]!
+}
+
+input ScheduleFilterInput {
+  classroomId: Int
+  dayOfWeek: Int
+  groupId: Int
+  isPublished: Boolean
+  limit: Int = 50
+  page: Int = 1
+  teacherId: Int
+}
+
+type ScheduleSlot {
+  classroom: Classroom!
+  createdAt: DateTime!
+  createdBy: User
+  dayOfWeek: Int!
+  endTime: String!
+  group: Group!
+  id: ID!
+  isPublished: Boolean!
+  startTime: String!
+  subgroup: String
+  subject: Subject!
+  teacher: Teacher!
+  updatedAt: DateTime!
 }
 
 type SchoolYear {
@@ -148,6 +194,19 @@ input UpdateGroupInput {
   id: Int!
   name: String
   parentId: Int
+}
+
+input UpdateScheduleSlotInput {
+  classroomId: Int
+  dayOfWeek: Int
+  endTime: String
+  groupId: Int
+  id: Int!
+  isPublished: Boolean = false
+  startTime: String
+  subgroup: String
+  subjectId: Int
+  teacherId: Int
 }
 
 input UpdateSubjectInput {

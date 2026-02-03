@@ -8,7 +8,12 @@ async function bootstrap()
     const logger = new Logger('Bootstrap');
     const app = await NestFactory.create(AppModule);
 
-    app.enableCors();
+    app.enableCors({
+        origin: true, // Permite cualquier origen en desarrollo
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'Apollo-Require-Preflight'],
+        credentials: true,
+    });
 
     await app.listen(process.env.PORT ?? 3000);
     logger.log(`Application is running on: ${await app.getUrl()}`);

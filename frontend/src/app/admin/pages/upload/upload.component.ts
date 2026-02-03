@@ -17,6 +17,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { cloudUploadOutline, documentTextOutline } from 'ionicons/icons';
+import { environment } from '../../../../environments/environment';
 
 @Component({
     selector: 'app-upload',
@@ -106,6 +107,7 @@ import { cloudUploadOutline, documentTextOutline } from 'ionicons/icons';
 export class UploadComponent implements OnInit
 {
     private http = inject(HttpClient);
+    private apiUrl = environment.apiUrl;
 
     selectedFile: File | null = null;
     isLoading = false;
@@ -133,7 +135,7 @@ export class UploadComponent implements OnInit
         const formData = new FormData();
         formData.append('file', this.selectedFile);
 
-        this.http.post('http://localhost:3000/academic/upload-schedule', formData)
+        this.http.post(`${this.apiUrl}/academic/upload-schedule`, formData)
             .subscribe({
             next: (res: any) =>
             {

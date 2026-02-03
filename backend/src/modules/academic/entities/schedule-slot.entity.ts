@@ -50,8 +50,8 @@ export class ScheduleSlot
     @Column({ type: 'time' })
     endTime: string;
 
-    @Field({ nullable: true })
-    @Column({ nullable: true })
+    @Field(() => String, { nullable: true })
+    @Column({ type: 'varchar', nullable: true })
     subgroup: string | null;
 
     /** Indica si el horario es visible públicamente */
