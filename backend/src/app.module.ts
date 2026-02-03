@@ -1,33 +1,50 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { join } from 'path';
+
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { ConfigModule as AppConfigModule } from './modules/config/config.module';
+import { AcademicModule } from './modules/academic/academic.module';
 
 @Module({
-  imports: [
-    // 1. Cargar variables de entorno
-    ConfigModule.forRoot({
-      isGlobal: true, // Disponible en toda la app
-    }),
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+        }),
 
-    // 2. Configuración asíncrona de TypeORM (para leer las vars de entorno)
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USER'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_NAME'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true, // ¡OJO! Solo para desarrollo (crea tablas automáticamente)
-      }),
-    }),
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+        TypeOrmModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+
+            useFactory: (configService: ConfigService) => ({
+                type: 'postgres',
+                host: configService.get<string>('DB_HOST'),
+                port: configService.get<number>('DB_PORT'),
+                username: configService.get<string>('DB_USER'),
+                password: configService.get<string>('DB_PASSWORD'),
+                database: configService.get<string>('DB_NAME'),
+                entities: [__dirname + '/**/*.entity{.ts,.js}'],
+                autoLoadEntities: true,
+                synchronize: true,
+            }),
+        }),
+
+        GraphQLModule.forRoot<ApolloDriverConfig>({
+            driver: ApolloDriver,
+            autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+            sortSchema: true,
+            playground: true,
+        }),
+
+        UsersModule,
+        AuthModule,
+        AppConfigModule,
+        AcademicModule,
+    ],
 })
-export class AppModule {}
+export class AppModule
+{}

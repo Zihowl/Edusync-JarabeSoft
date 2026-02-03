@@ -1,0 +1,75 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AllowedDomain {
+  domain: String!
+  id: ID!
+}
+
+type Classroom {
+  building: String
+  id: ID!
+  name: String!
+}
+
+input CreateAdminInput {
+  email: String!
+  fullName: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Group {
+  id: ID!
+  name: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type LoginResponse {
+  accessToken: String!
+  user: User!
+}
+
+type Mutation {
+  CreateAdmin(input: CreateAdminInput!): User!
+  CreateAllowedDomain(domain: String!): AllowedDomain!
+  Login(loginInput: LoginInput!): LoginResponse!
+  RemoveAllowedDomain(id: Int!): Boolean!
+}
+
+type Query {
+  GetAllowedDomains: [AllowedDomain!]!
+  GetTeachers: [Teacher!]!
+  GetUsers: [User!]!
+}
+
+type Subject {
+  code: String!
+  id: ID!
+  name: String!
+}
+
+type Teacher {
+  email: String
+  employeeNumber: String!
+  id: ID!
+  name: String!
+}
+
+type User {
+  createdAt: DateTime!
+  email: String!
+  fullName: String
+  id: ID!
+  isActive: Boolean!
+  role: String!
+  updatedAt: DateTime!
+}

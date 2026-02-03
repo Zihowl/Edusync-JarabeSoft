@@ -31,6 +31,10 @@
 $ npm install
 ```
 
+> Environment: create a `backend/.env` with the values you need or copy `backend/.env.example`.
+> - `backend/.env` is local and should contain sensitive values (it's in `.gitignore`).
+> - `backend/.env.example` contains placeholders and can be committed to the repo.
+
 ## Compile and run the project
 
 ```bash
@@ -43,6 +47,9 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+Notes:
+- Docker Compose reads `.env` in the project root for substitutions (we added a `.env` at repo root for convenience). If you prefer, keep DB credentials only in `backend/.env` and start backend from the `backend/` folder.
 
 ## Run tests
 
