@@ -6,6 +6,7 @@ import * as xlsx from 'xlsx';
 import { Teacher } from '../entities/teacher.entity';
 import { Subject } from '../entities/subject.entity';
 import { Classroom } from '../entities/classroom.entity';
+import { Building } from '../entities/building.entity';
 import { Group } from '../entities/group.entity';
 import { ScheduleSlot } from '../entities/schedule-slot.entity';
 
@@ -16,6 +17,7 @@ export class ExcelService
         @InjectRepository(Teacher) private teacherRepo: Repository<Teacher>,
         @InjectRepository(Subject) private subjectRepo: Repository<Subject>,
         @InjectRepository(Classroom) private classroomRepo: Repository<Classroom>,
+        @InjectRepository(Building) private buildingRepo: Repository<Building>,
         @InjectRepository(Group) private groupRepo: Repository<Group>,
         @InjectRepository(ScheduleSlot) private scheduleRepo: Repository<ScheduleSlot>,
     ) 
@@ -168,13 +170,22 @@ export class ExcelService
         return teacher;
     }
 
-    private async findOrCreateClassroom(name: string, building: string) 
+    private async findOrCreateClassroom(name: string, buildingName: string) 
     {
         const finalAula = name || 'VIRTUAL';
-        let classroom = await this.classroomRepo.findOneBy({ name: finalAula });
+        let classroom = await this.classroomRepo.findOne({ where: { name: finalAula }, relations: ['building'] });
         if (!classroom) 
         {
-            classroom = this.classroomRepo.create({ name: finalAula, building: building || undefined });
+            let building: Building | null = null;
+            if (buildingName) {
+                building = await this.buildingRepo.findOne({ where: { name: buildingName } });
+                if (!building) {
+                    const newBuilding = this.buildingRepo.create({ name: buildingName });
+                    building = await this.buildingRepo.save(newBuilding);
+                }
+            }
+
+            classroom = this.classroomRepo.create({ name: finalAula, building: (building as Building) || undefined });
             await this.classroomRepo.save(classroom);
         }
         return classroom;

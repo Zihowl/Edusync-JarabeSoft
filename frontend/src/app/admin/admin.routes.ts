@@ -31,6 +31,26 @@ export const adminRoutes: Routes = [
         path: 'catalogs/teachers',
         loadComponent: () => 
             import('./pages/catalogs/teachers/teachers.component').then(m => m.TeachersComponent)
+    },
+    {
+        path: 'catalogs/subjects',
+        loadComponent: () => 
+            import('./pages/catalogs/subjects/subjects.component').then(m => m.SubjectsComponent)
+    },
+    {
+        path: 'catalogs/groups',
+        loadComponent: () => 
+            import('./pages/catalogs/groups/groups.component').then(m => m.GroupsComponent)
+    },
+    {
+        path: 'catalogs/classrooms',
+        loadComponent: () => 
+            import('./pages/catalogs/classrooms/classrooms.component').then(m => m.ClassroomsComponent)
+    },
+    {
+        path: 'catalogs/buildings',
+        loadComponent: () => 
+            import('./pages/catalogs/buildings/buildings.component').then(m => m.BuildingsComponent)
     }
     ]
   }
