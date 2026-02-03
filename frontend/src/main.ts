@@ -6,6 +6,7 @@ import { inject } from '@angular/core';
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { InMemoryCache } from '@apollo/client/core';
+import { environment } from './environments/environment';
 
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
@@ -30,7 +31,7 @@ bootstrapApplication(AppComponent,
             const httpLink = inject(HttpLink);
 
             return {
-                link: httpLink.create({ uri: 'http://localhost:3000/graphql' }),
+                link: httpLink.create({ uri: `${environment.apiUrl}/graphql` }),
                 cache: new InMemoryCache(),
             };
         }),
