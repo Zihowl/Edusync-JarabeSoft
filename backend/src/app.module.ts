@@ -9,6 +9,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule as AppConfigModule } from './modules/config/config.module';
 import { AcademicModule } from './modules/academic/academic.module';
+import { PublicModule } from './modules/public/public.module';
 
 @Module({
     imports: [
@@ -44,6 +45,7 @@ import { AcademicModule } from './modules/academic/academic.module';
         AuthModule,
         AppConfigModule,
         AcademicModule,
+        PublicModule,
     ],
 })
 export class AppModule

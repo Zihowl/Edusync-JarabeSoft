@@ -7,4 +7,4 @@
 ## Cómo iniciar
 1. Levantar BD: `docker compose up -d`
 2. Backend: `cd backend && npm run start:dev`
-3. Frontend: `cd frontend && npm run start`
+3. Frontend: `cd frontend && npm start -- --host 0.0.0.0`

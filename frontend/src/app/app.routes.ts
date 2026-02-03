@@ -16,13 +16,11 @@ export const routes: Routes = [
         redirectTo: 'auth/login',
         pathMatch: 'full'
     },
-    /*
     {
         path: 'public',
         loadChildren: () => 
-        import('./public/public.routes').then(m => m.publicRoutes)
+            import('./public/public.routes').then(m => m.publicRoutes)
     },
-    */
     {
         path: '**',
         redirectTo: 'auth/login'

@@ -18,6 +18,8 @@ import { GroupsService } from './services/groups.service';
 import { GroupsResolver } from './resolvers/groups.resolver';
 import { ClassroomsService } from './services/classrooms.service';
 import { ClassroomsResolver } from './resolvers/classrooms.resolver';
+import { SchedulesService } from './services/schedules.service';
+import { SchedulesResolver } from './resolvers/schedules.resolver';
 import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Module({
@@ -35,9 +37,11 @@ import { RolesGuard } from '../auth/guards/roles.guard';
         GroupsResolver,
         ClassroomsService,
         ClassroomsResolver,
+        SchedulesService,
+        SchedulesResolver,
         RolesGuard,
     ],
-    exports: [ExcelService],
+    exports: [ExcelService, SchedulesService],
 })
 export class AcademicModule
 {}

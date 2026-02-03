@@ -23,6 +23,11 @@ export const adminRoutes: Routes = [
             import('./pages/upload/upload.component').then(m => m.UploadComponent) 
     },
     {
+        path: 'schedules',
+        loadComponent: () =>
+            import('./pages/schedules/schedules.component').then(m => m.SchedulesComponent)
+    },
+    {
         path: 'users',
         loadComponent: () => 
             import('./pages/users/users.component').then(m => m.UsersComponent)

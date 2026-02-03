@@ -21,7 +21,7 @@ import {
     IonBadge
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline, bookOutline, layersOutline, businessOutline, homeOutline } from 'ionicons/icons';
+import { settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline, bookOutline, layersOutline, businessOutline, homeOutline, calendarOutline } from 'ionicons/icons';
 
 type Role = 'SUPER_ADMIN' | 'ADMIN_HORARIOS';
 interface Card { title: string; icon: string; route: string; color?: string; roles: Role[]; desc: string; }
@@ -102,6 +102,7 @@ export class DashboardComponent implements OnInit
     cards: Card[] = [
         { title: 'Configuración', icon: 'settings-outline', route: '/admin/config', roles: ['SUPER_ADMIN'], desc: 'Gestionar ciclo escolar y dominios.' },
         { title: 'Usuarios', icon: 'people-outline', route: '/admin/users', roles: ['SUPER_ADMIN'], desc: 'Altas y bajas de administradores.' },
+        { title: 'Horarios', icon: 'calendar-outline', route: '/admin/schedules', color: 'success', roles: ['ADMIN_HORARIOS'], desc: 'Gestionar horarios de grupos y subgrupos.' },
         { title: 'Carga de Horarios', icon: 'cloud-upload-outline', route: '/admin/upload', color: 'tertiary', roles: ['ADMIN_HORARIOS'], desc: 'Importar archivos Excel masivos.' },
         { title: 'Docentes', icon: 'people-outline', route: '/admin/catalogs/teachers', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Catálogo de personal docente.' },
         { title: 'Materias', icon: 'book-outline', route: '/admin/catalogs/subjects', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Catálogo de materias.' },
@@ -112,7 +113,7 @@ export class DashboardComponent implements OnInit
 
     ngOnInit() 
     {
-        addIcons({ settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline, bookOutline, layersOutline, businessOutline, homeOutline });
+        addIcons({ settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline, bookOutline, layersOutline, businessOutline, homeOutline, calendarOutline });
     }
 
     trackByTitle(index: number, card: Card) { return card.title; }
