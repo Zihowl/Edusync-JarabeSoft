@@ -98,9 +98,18 @@ export class TeachersComponent implements OnInit
     {
         this.apollo.watchQuery<any>({ query: GET_TEACHERS, fetchPolicy: 'network-only' })
             .valueChanges.subscribe({
-            next: ({ data }) =>
+            next: (res: any) =>
             {
-                this.teachers = data.GetTeachers;
+                const data = res?.data;
+                if (!data)
+                {
+                    console.error('GetTeachers returned no data:', res);
+                    this.teachers = [];
+                    this.filteredTeachers = [];
+                    return;
+                }
+
+                this.teachers = data.GetTeachers ?? [];
                 this.filteredTeachers = [...this.teachers];
             },
             error: (err) =>

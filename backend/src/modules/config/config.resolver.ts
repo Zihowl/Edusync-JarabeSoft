@@ -1,6 +1,7 @@
 import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { AllowedDomain } from './entities/allowed-domain.entity';
+import { SchoolYear } from './entities/school-year.entity';
 import { ConfigService } from './config.service';
 import { GqlAuthGuard } from '../auth/guards/gql-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -35,5 +36,24 @@ export class ConfigResolver
     async RemoveAllowedDomain(@Args('id', { type: () => Int }) id: number): Promise<boolean> 
     {
         return await this.configService.removeDomain(id);
+    }
+
+    @Query(() => SchoolYear, { name: 'GetCurrentSchoolYear', nullable: true })
+    @UseGuards(GqlAuthGuard, RolesGuard)
+    @Roles(UserRole.SUPER_ADMIN)
+    async GetCurrentSchoolYear(): Promise<SchoolYear | null> 
+    {
+        return await this.configService.getCurrentSchoolYear();
+    }
+
+    @Mutation(() => SchoolYear, { name: 'SetCurrentSchoolYear' })
+    @UseGuards(GqlAuthGuard, RolesGuard)
+    @Roles(UserRole.SUPER_ADMIN)
+    async SetCurrentSchoolYear(
+        @Args('startDate') startDate: string,
+        @Args('endDate') endDate: string,
+    ): Promise<SchoolYear> 
+    {
+        return await this.configService.setCurrentSchoolYear(startDate, endDate);
     }
 }

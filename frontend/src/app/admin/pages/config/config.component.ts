@@ -30,6 +30,27 @@ const REMOVE_DOMAIN = gql`
     }
 `;
 
+const GET_CURRENT_SCHOOL_YEAR = gql`
+    query GetCurrentSchoolYear {
+        GetCurrentSchoolYear {
+            id
+            startDate
+            endDate
+            createdAt
+        }
+    }
+`;
+
+const SET_CURRENT_SCHOOL_YEAR = gql`
+    mutation SetCurrentSchoolYear($startDate: String!, $endDate: String!) {
+        SetCurrentSchoolYear(startDate: $startDate, endDate: $endDate) {
+            id
+            startDate
+            endDate
+        }
+    }
+`;
+
 @Component({
     selector: 'app-config',
     standalone: true,
@@ -80,6 +101,22 @@ const REMOVE_DOMAIN = gql`
                         </div>
                     </div>
                 </form>
+
+                <div class="card mb-4 bg-dark text-white border-secondary">
+                    <div class="card-body">
+                        <h5 class="mb-2">Ciclo en curso</h5>
+                        <div *ngIf="currentSchoolYear; else noCycle" class="current-cycle">
+                            <div class="cycle-range fw-bold fs-5 text-white">
+                                {{ currentSchoolYear.startDate | date:'dd-MM-yyyy' }} → {{ currentSchoolYear.endDate | date:'dd-MM-yyyy' }}
+                            </div>
+                            <small class="cycle-saved text-white-50">Guardado: {{ currentSchoolYear.createdAt | date:'short' }}</small>
+                        </div>
+                        <ng-template #noCycle>
+                            <div class="text-muted">No hay ciclo en curso.</div>
+                        </ng-template>
+                    </div>
+                </div> 
+
                 <br>
                 <h3>Dominios Permitidos</h3>
                 <div class="card mb-4 bg-dark text-white border-secondary">
@@ -119,6 +156,7 @@ export class ConfigComponent implements OnInit
     private apollo = inject(Apollo);
 
     domains: any[] = [];
+    currentSchoolYear: any = null;
     newDomain: string = '';
     newSchoolYearStart: string = '';
     newSchoolYearEnd: string = '';
@@ -127,14 +165,48 @@ export class ConfigComponent implements OnInit
     {
       addIcons({ trashOutline });
         this.LoadDomains();
+        this.LoadCurrentSchoolYear();
     }
 
     LoadDomains() 
     {
         this.apollo.watchQuery<any>({ query: GET_DOMAINS })
-            .valueChanges.subscribe(({ data }) =>
-            {
-                this.domains = data.GetAllowedDomains;
+            .valueChanges.subscribe({
+                next: (res: any) => {
+                    const data = res?.data;
+                    if (!data)
+                    {
+                        console.error('GetAllowedDomains returned no data:', res);
+                        this.domains = [];
+                        return;
+                    }
+
+                    this.domains = data.GetAllowedDomains ?? [];
+                },
+                error: (err) => {
+                    console.error('GetAllowedDomains network/error:', err);
+                    this.domains = [];
+                }
+            });
+    }
+
+    LoadCurrentSchoolYear()
+    {
+        this.apollo.query<any>({ query: GET_CURRENT_SCHOOL_YEAR, fetchPolicy: 'network-only' })
+            .subscribe({
+                next: (res: any) => {
+                    const data = res?.data;
+                    const errors = res?.errors;
+                    if (errors && errors.length > 0) {
+                        console.error('GetCurrentSchoolYear errors:', errors);
+                    }
+                    console.debug('GetCurrentSchoolYear result:', data);
+                    this.currentSchoolYear = data?.GetCurrentSchoolYear ?? null;
+                },
+                error: (err) => {
+                    console.error('GetCurrentSchoolYear network/error:', err);
+                    this.currentSchoolYear = null;
+                }
             });
     }
 
@@ -165,11 +237,21 @@ export class ConfigComponent implements OnInit
             return;
         }
 
-        // TODO: Implement backend call to save the school year range
-        alert('Ciclo escolar agregado: ' + this.newSchoolYearStart + ' - ' + this.newSchoolYearEnd);
-
-        this.newSchoolYearStart = '';
-        this.newSchoolYearEnd = '';
+        this.apollo.mutate({
+            mutation: SET_CURRENT_SCHOOL_YEAR,
+            variables: { startDate: this.newSchoolYearStart, endDate: this.newSchoolYearEnd },
+            refetchQueries: [{ query: GET_CURRENT_SCHOOL_YEAR }]
+        }).subscribe({
+            next: (res: any) => {
+                console.debug('SetCurrentSchoolYear response:', res);
+                alert('Ciclo en curso actualizado: ' + this.newSchoolYearStart + ' - ' + this.newSchoolYearEnd);
+                this.newSchoolYearStart = '';
+                this.newSchoolYearEnd = '';
+                // Force reload in case refetchQueries didn't run with auth headers yet
+                this.LoadCurrentSchoolYear();
+            },
+            error: (err) => alert('Error al guardar ciclo escolar: ' + err.message)
+        });
     }
 
     RemoveDomain(id: number) 

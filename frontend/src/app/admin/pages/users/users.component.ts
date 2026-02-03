@@ -192,11 +192,24 @@ export class UsersComponent implements OnInit
 
     LoadAllowedDomains()
     {
-        this.apollo.watchQuery<any>({ query: GET_ALLOWED_DOMAINS })
-        .valueChanges.subscribe(({ data }) =>
-        {
-                this.allowedDomains = data.GetAllowedDomains.map((d: any) => d.domain.toLowerCase());
-            });
+        this.apollo.watchQuery<any>({ query: GET_ALLOWED_DOMAINS, fetchPolicy: 'network-only' })
+        .valueChanges.subscribe({
+            next: (res: any) => {
+                const data = res?.data;
+                if (!data)
+                {
+                    console.error('GetAllowedDomains returned no data for users:', res);
+                    this.allowedDomains = [];
+                    return;
+                }
+
+                this.allowedDomains = (data.GetAllowedDomains ?? []).map((d: any) => d.domain.toLowerCase());
+            },
+            error: (err) => {
+                console.error('GetAllowedDomains network/error (users):', err);
+                this.allowedDomains = [];
+            }
+        });
     }
 
     getEmailDomain(): string | null
@@ -221,11 +234,24 @@ export class UsersComponent implements OnInit
 
     LoadUsers() 
     {
-        this.apollo.watchQuery<any>({ query: GET_USERS })
-        .valueChanges.subscribe(({ data }) =>
-        {
-                this.users = data.GetUsers;
-            });
+        this.apollo.watchQuery<any>({ query: GET_USERS, fetchPolicy: 'network-only' })
+        .valueChanges.subscribe({
+            next: (res: any) => {
+                const data = res?.data;
+                if (!data)
+                {
+                    console.error('GetUsers returned no data:', res);
+                    this.users = [];
+                    return;
+                }
+
+                this.users = data.GetUsers ?? [];
+            },
+            error: (err) => {
+                console.error('GetUsers network/error:', err);
+                this.users = [];
+            }
+        });
     }
 
     SetOpen(isOpen: boolean) 
