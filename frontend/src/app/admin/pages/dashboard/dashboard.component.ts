@@ -21,7 +21,7 @@ import {
     IonBadge
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline } from 'ionicons/icons';
+import { settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline, bookOutline, layersOutline, businessOutline, homeOutline } from 'ionicons/icons';
 
 type Role = 'SUPER_ADMIN' | 'ADMIN_HORARIOS';
 interface Card { title: string; icon: string; route: string; color?: string; roles: Role[]; desc: string; }
@@ -103,12 +103,16 @@ export class DashboardComponent implements OnInit
         { title: 'Configuración', icon: 'settings-outline', route: '/admin/config', roles: ['SUPER_ADMIN'], desc: 'Gestionar ciclo escolar y dominios.' },
         { title: 'Usuarios', icon: 'people-outline', route: '/admin/users', roles: ['SUPER_ADMIN'], desc: 'Altas y bajas de administradores.' },
         { title: 'Carga de Horarios', icon: 'cloud-upload-outline', route: '/admin/upload', color: 'tertiary', roles: ['ADMIN_HORARIOS'], desc: 'Importar archivos Excel masivos.' },
-        { title: 'Docentes', icon: 'people-outline', route: '/admin/catalogs/teachers', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Ver lista de maestros importados.' }
+        { title: 'Docentes', icon: 'people-outline', route: '/admin/catalogs/teachers', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Catálogo de personal docente.' },
+        { title: 'Materias', icon: 'book-outline', route: '/admin/catalogs/subjects', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Catálogo de materias.' },
+        { title: 'Grupos', icon: 'layers-outline', route: '/admin/catalogs/groups', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Estructura de grupos y subgrupos.' },
+        { title: 'Aulas', icon: 'business-outline', route: '/admin/catalogs/classrooms', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Espacios físicos y salones.' },
+        { title: 'Edificios', icon: 'home-outline', route: '/admin/catalogs/buildings', color: 'light', roles: ['ADMIN_HORARIOS'], desc: 'Infraestructura del plantel.' }
     ];
 
     ngOnInit() 
     {
-        addIcons({ settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline });
+        addIcons({ settingsOutline, peopleOutline, logOutOutline, cloudUploadOutline, bookOutline, layersOutline, businessOutline, homeOutline });
     }
 
     trackByTitle(index: number, card: Card) { return card.title; }
